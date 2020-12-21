@@ -17,6 +17,8 @@
 #include <time.h>
 #include <libcloudph++/common/earth.hpp>
 #include <numeric>
+#include <synth_turb/SynthTurb3d_periodic_box.hpp>
+
 
 
  #define Onishi
@@ -24,16 +26,18 @@
 // #define HallDavis
 
 #define HIST_BINS 5001
-#define BACKEND multi_CUDA
+#define BACKEND OpenMP//multi_CUDA
 #define N_SD_MAX 4e8 //1e8
-#define NXNYNZ 720 // number of cells in each direction
+#define NXNYNZ 10 //720 // number of cells in each direction
 #define SEDI 1
 #define RCYC 0
 #define N_REP 1e0
 #define SIMTIME 4000 // number of steps 
 #define NP 1e0 // init number of droplets per cell
-#define DT 0.1 // [s]
+#define DT 0.01 // [s]
 #define DISS_RATE 1 // [cm^2 / s^3]
+#define LKOL 1e-3 // Kolmogorov length scale[m]. not really used here? Periodic synth turb doesnt need it
+#define NWaves 6 // number of wave vectors for each synthethic turbulence mode. Needs to be 6 for periodic
 
 using namespace std;
 using namespace libcloudphxx::lgrngn;
@@ -68,6 +72,7 @@ const int nx = NXNYNZ; // total number of collision cells
 const int ny = NXNYNZ;
 const int nz = NXNYNZ;
 constexpr int n_cell = NXNYNZ * NXNYNZ * NXNYNZ;
+constexpr int n_courant = (NXNYNZ+1) * NXNYNZ * NXNYNZ;
 
 const real_t dt = DT;
 const real_t Np = NP; // number of droplets per simulation (collision cell)
@@ -129,10 +134,12 @@ void two_step(particles_proto_t<real_t> *prtcls,
              arrinfo_t<real_t> th,
      //        arrinfo_t<real_t> rhod,
              arrinfo_t<real_t> rv,
-             arrinfo_t<real_t> diss_rate,
+             arrinfo_t<real_t> Cx,
+             arrinfo_t<real_t> Cy,
+             arrinfo_t<real_t> Cz,
              opts_t<real_t> opts)
 {
-    prtcls->step_sync(opts,th,rv,arrinfo_t<real_t>(),arrinfo_t<real_t>(),arrinfo_t<real_t>(),arrinfo_t<real_t>(), diss_rate);
+    prtcls->step_sync(opts,th,rv,arrinfo_t<real_t>(),Cx, Cy, Cz);//arrinfo_t<real_t>(),arrinfo_t<real_t>(),arrinfo_t<real_t>());//, diss_rate);
     prtcls->step_async(opts);
 }
 
@@ -313,7 +320,8 @@ int main(){
     opts_init.sedi_switch=1;
     opts_init.src_switch=0;
     opts_init.chem_switch=0;
-    opts_init.turb_adve_switch=1;
+    opts_init.turb_adve_switch=0;
+    opts_init.adve_scheme = as_t::pred_corr;
 
     opts_init.periodic_topbot_walls = 1;
   
@@ -348,7 +356,7 @@ int main(){
 
 #ifdef Onishi
     opts_init.dry_distros.emplace(
-      0, //0 // key (kappa)
+      0.1, //0 // key (kappa)
       std::make_shared<exp_dry_radii<real_t>> () // value
     );
 
@@ -361,6 +369,10 @@ int main(){
       }
     );
 #endif
+
+    // synthetic turbulence class
+    SynthTurb::SynthTurb3d_periodic_box<real_t, NXNYNZ, NWaves> synth_turb(DISS_RATE*1e-4, opts_init.x1, LKOL); // LMAX = x1, Nmodes = nx 
+    synth_turb.generate_random_modes();
 
     opts_init.SGS_mix_len = std::vector<real_t>(nz, opts_init.z1); // z1 because the whole domain is like a LES cell in which flow is not resolved
   
@@ -378,24 +390,94 @@ int main(){
     std::vector<real_t> prhod(n_cell, rho_stp_f);
     std::vector<real_t> prv(n_cell, .01);
     std::vector<real_t> pdiss_rate(n_cell, DISS_RATE * 1e-4); // 1e-4 to turn cm^2/s^3 to m^2/s^3
+
+    std::vector<real_t> pCx(n_courant);
+    std::vector<real_t> pCy(n_courant);
+    std::vector<real_t> pCz(n_courant);
   
     //long int strides[] = {sizeof(real_t) * NXNYNZ * NXNYNZ, sizeof(real_t) * NXNYNZ, sizeof(real_t)};
     long int strides[] = {1 * NXNYNZ * NXNYNZ, 1 * NXNYNZ, 1};
-  
+    long int strides_Cx[] = {1 * NXNYNZ * NXNYNZ, 1 * NXNYNZ, 1};
+    long int strides_Cy[] = {1 * NXNYNZ * (NXNYNZ+1), 1 * NXNYNZ, 1};
+    long int strides_Cz[] = {1 * NXNYNZ * (NXNYNZ+1), 1 * (NXNYNZ+1), 1};
+
+    // Init Courants
+    // calc courant x
+    // TODO: async (if CUDA)
+    // TODO: jak uwzglednic periodycznosc w Arakawa-C
+    // TODO: assert abs(courant)<1, albo adaptive timestep?
+    # pragma omp parallel for
+    for(int i = 0; i < NXNYNZ+1; ++i)
+      for(int j = 0; j < NXNYNZ; ++j)
+        for(int k = 0; k < NXNYNZ; ++k)
+        {
+          const real_t x[3] = {i * dx, (j+0.5) * dy, (k+0.5) * dz}; 
+          synth_turb.calculate_velocity_field_dir<0>(pCx.at(i * strides_Cx[0] + j * strides_Cx[1] + k * strides_Cx[2]), x, 0);
+        }
+    # pragma omp parallel for
+    for(int i = 0; i < NXNYNZ; ++i)
+      for(int j = 0; j < NXNYNZ+1; ++j)
+        for(int k = 0; k < NXNYNZ; ++k)
+        {
+          const real_t x[3] = {(i+0.5) * dx, j * dy, (k+0.5) * dz}; 
+          synth_turb.calculate_velocity_field_dir<1>(pCy.at(i * strides_Cy[0] + j * strides_Cy[1] + k * strides_Cy[2]), x, 0);
+        }
+    # pragma omp parallel for
+    for(int i = 0; i < NXNYNZ; ++i)
+      for(int j = 0; j < NXNYNZ; ++j)
+        for(int k = 0; k < NXNYNZ+1; ++k)
+        {
+          const real_t x[3] = {(i+0.5) * dx, (j+0.5) * dy, k * dz}; 
+          synth_turb.calculate_velocity_field_dir<2>(pCz.at(i * strides_Cz[0] + j * strides_Cz[1] + k * strides_Cz[2]), x, 0);
+        }
+
+    // velocities -> Courants
+    for(int i = 0; i < n_courant; ++i)
+    {
+      pCx.at(i) *= dt / dx;
+      pCy.at(i) *= dt / dx;
+      pCz.at(i) *= dt / dx;
+    }
+
+    for(int i = 0; i < NXNYNZ+1; ++i)
+      for(int j = 0; j < NXNYNZ; ++j)
+        for(int k = 0; k < NXNYNZ; ++k)
+        {
+          std::cerr << " i: " << i << " j: " << j << " k: " << k << " Cx: " << pCx.at(i * strides_Cx[0] + j * strides_Cx[1] + k * strides_Cx[2]) << std::endl;
+        }
+
+    for(int i = 0; i < NXNYNZ; ++i)
+      for(int j = 0; j < NXNYNZ+1; ++j)
+        for(int k = 0; k < NXNYNZ; ++k)
+        {
+          std::cerr << " i: " << i << " j: " << j << " k: " << k << " Cy: " << pCy.at(i * strides_Cy[0] + j * strides_Cy[1] + k * strides_Cy[2]) << std::endl;
+        }
+
+    for(int i = 0; i < NXNYNZ; ++i)
+      for(int j = 0; j < NXNYNZ; ++j)
+        for(int k = 0; k < NXNYNZ+1; ++k)
+        {
+          std::cerr << " i: " << i << " j: " << j << " k: " << k << " Cz: " << pCz.at(i * strides_Cz[0] + j * strides_Cz[1] + k * strides_Cz[2]) << std::endl;
+        }
+
     arrinfo_t<real_t> th(pth.data(), strides);
     arrinfo_t<real_t> rhod(prhod.data(), strides);
     arrinfo_t<real_t> rv(prv.data(), strides);
     arrinfo_t<real_t> diss_rate(pdiss_rate.data(), strides);
+    arrinfo_t<real_t> Cx(pCx.data(), strides_Cx);
+    arrinfo_t<real_t> Cy(pCy.data(), strides_Cy);
+    arrinfo_t<real_t> Cz(pCz.data(), strides_Cz);
 
-    prtcls->init(th,rv,rhod);
+    prtcls->init(th,rv,rhod, arrinfo_t<real_t>(), Cx, Cy, Cz);
+    std::cerr << "post init" << std::endl;
   
     opts_t<real_t> opts;
-    opts.adve = 0;
+    opts.adve = 1;
     opts.sedi = SEDI;
     opts.cond = 0;
     opts.coal = 1;
     opts.rcyc = RCYC;
-    opts.turb_adve = 1;
+    opts.turb_adve = 0;
   
     std::fill(res_bins_pre[rep].begin(), res_bins_pre[rep].end(), 0.);
     std::fill(res_bins_post[rep].begin(), res_bins_post[rep].end(), 0.);
@@ -449,7 +531,7 @@ int main(){
   
     for(int i=1; i<=sim_time; ++i)
     {
-      two_step(prtcls.get(),th,rv,diss_rate,opts);
+      two_step(prtcls.get(),th,rv,Cx,Cy,Cz,opts);
       // get max rw
 //      prtcls->diag_max_rw();
 //      arr = prtcls->outbuf();
