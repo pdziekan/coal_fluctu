@@ -412,7 +412,7 @@ int main(){
         for(int k = 0; k < NXNYNZ; ++k)
         {
           const real_t x[3] = {i * dx, (j+0.5) * dy, (k+0.5) * dz}; 
-          synth_turb.calculate_velocity_field_dir<0>(pCx.at(i * strides_Cx[0] + j * strides_Cx[1] + k * strides_Cx[2]), x, 0);
+          pCx.at(i * strides_Cx[0] + j * strides_Cx[1] + k * strides_Cx[2]) = synth_turb.calculate_velocity_dir<0>(x, 0);
         }
     # pragma omp parallel for
     for(int i = 0; i < NXNYNZ; ++i)
@@ -420,7 +420,7 @@ int main(){
         for(int k = 0; k < NXNYNZ; ++k)
         {
           const real_t x[3] = {(i+0.5) * dx, j * dy, (k+0.5) * dz}; 
-          synth_turb.calculate_velocity_field_dir<1>(pCy.at(i * strides_Cy[0] + j * strides_Cy[1] + k * strides_Cy[2]), x, 0);
+          pCy.at(i * strides_Cy[0] + j * strides_Cy[1] + k * strides_Cy[2]) = synth_turb.calculate_velocity_dir<1>(x, 0);
         }
     # pragma omp parallel for
     for(int i = 0; i < NXNYNZ; ++i)
@@ -428,7 +428,7 @@ int main(){
         for(int k = 0; k < NXNYNZ+1; ++k)
         {
           const real_t x[3] = {(i+0.5) * dx, (j+0.5) * dy, k * dz}; 
-          synth_turb.calculate_velocity_field_dir<2>(pCz.at(i * strides_Cz[0] + j * strides_Cz[1] + k * strides_Cz[2]), x, 0);
+          pCz.at(i * strides_Cz[0] + j * strides_Cz[1] + k * strides_Cz[2]) = synth_turb.calculate_velocity_dir<2>(x, 0);
         }
 
     // velocities -> Courants
