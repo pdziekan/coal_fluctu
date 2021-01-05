@@ -138,6 +138,30 @@ void calc_courants(SynthTurb::SynthTurb3d_periodic_box_multiwave<real_t, NModes,
   }
 }
 
+/*
+
+    for(int i = 0; i < NXNYNZ+1; ++i)
+      for(int j = 0; j < NXNYNZ; ++j)
+        for(int k = 0; k < NXNYNZ; ++k)
+        {
+          std::cerr << " i: " << i << " j: " << j << " k: " << k << " Cx: " << pCx.at(i * strides_Cx[0] + j * strides_Cx[1] + k * strides_Cx[2]) << std::endl;
+        }
+
+    for(int i = 0; i < NXNYNZ; ++i)
+      for(int j = 0; j < NXNYNZ+1; ++j)
+        for(int k = 0; k < NXNYNZ; ++k)
+        {
+          std::cerr << " i: " << i << " j: " << j << " k: " << k << " Cy: " << pCy.at(i * strides_Cy[0] + j * strides_Cy[1] + k * strides_Cy[2]) << std::endl;
+        }
+
+    for(int i = 0; i < NXNYNZ; ++i)
+      for(int j = 0; j < NXNYNZ; ++j)
+        for(int k = 0; k < NXNYNZ+1; ++k)
+        {
+          std::cerr << " i: " << i << " j: " << j << " k: " << k << " Cz: " << pCz.at(i * strides_Cz[0] + j * strides_Cz[1] + k * strides_Cz[2]) << std::endl;
+        }
+        */
+
 // lognormal aerosol distribution
 template <typename T>
 struct log_dry_radii : public libcloudphxx::common::unary_function<T>
@@ -446,29 +470,6 @@ int main(){
 
     // Init Courants
     calc_courants(synth_turb, pCx, pCy, pCz, strides_Cx, strides_Cy, strides_Cz, dx, dt);
-
-/*
-    for(int i = 0; i < NXNYNZ+1; ++i)
-      for(int j = 0; j < NXNYNZ; ++j)
-        for(int k = 0; k < NXNYNZ; ++k)
-        {
-          std::cerr << " i: " << i << " j: " << j << " k: " << k << " Cx: " << pCx.at(i * strides_Cx[0] + j * strides_Cx[1] + k * strides_Cx[2]) << std::endl;
-        }
-
-    for(int i = 0; i < NXNYNZ; ++i)
-      for(int j = 0; j < NXNYNZ+1; ++j)
-        for(int k = 0; k < NXNYNZ; ++k)
-        {
-          std::cerr << " i: " << i << " j: " << j << " k: " << k << " Cy: " << pCy.at(i * strides_Cy[0] + j * strides_Cy[1] + k * strides_Cy[2]) << std::endl;
-        }
-
-    for(int i = 0; i < NXNYNZ; ++i)
-      for(int j = 0; j < NXNYNZ; ++j)
-        for(int k = 0; k < NXNYNZ+1; ++k)
-        {
-          std::cerr << " i: " << i << " j: " << j << " k: " << k << " Cz: " << pCz.at(i * strides_Cz[0] + j * strides_Cz[1] + k * strides_Cz[2]) << std::endl;
-        }
-        */
 
     arrinfo_t<real_t> th(pth.data(), strides);
     arrinfo_t<real_t> rhod(prhod.data(), strides);
