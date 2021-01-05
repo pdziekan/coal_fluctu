@@ -18,6 +18,7 @@
 #include <libcloudph++/common/earth.hpp>
 #include <numeric>
 #include <synth_turb/SynthTurb3d_periodic_box_multiwave.hpp>
+#include <future>
 
 
 
@@ -171,18 +172,18 @@ return (n1_stp * si::cubic_metres) * 3. * pow(r,3) / pow(mean_rd1 / si::metres, 
   { return new exp_dry_radii( *this ); }
 };  
 
-void two_step(particles_proto_t<real_t> *prtcls, 
-             arrinfo_t<real_t> th,
-     //        arrinfo_t<real_t> rhod,
-             arrinfo_t<real_t> rv,
-             arrinfo_t<real_t> Cx,
-             arrinfo_t<real_t> Cy,
-             arrinfo_t<real_t> Cz,
-             opts_t<real_t> opts)
-{
-    prtcls->step_sync(opts,th,rv,arrinfo_t<real_t>(),Cx, Cy, Cz);//arrinfo_t<real_t>(),arrinfo_t<real_t>(),arrinfo_t<real_t>());//, diss_rate);
-    prtcls->step_async(opts);
-}
+//void two_step(particles_proto_t<real_t> *prtcls, 
+//             arrinfo_t<real_t> th,
+//     //        arrinfo_t<real_t> rhod,
+//             arrinfo_t<real_t> rv,
+//             arrinfo_t<real_t> Cx,
+//             arrinfo_t<real_t> Cy,
+//             arrinfo_t<real_t> Cz,
+//             opts_t<real_t> opts)
+//{
+//    prtcls->step_sync(opts,th,rv,arrinfo_t<real_t>(),Cx, Cy, Cz);//arrinfo_t<real_t>(),arrinfo_t<real_t>(),arrinfo_t<real_t>());//, diss_rate);
+//    prtcls->step_async(opts);
+//}
 
 
 void diag(particles_proto_t<real_t> *prtcls, std::array<real_t, HIST_BINS> &res_bins, std::array<real_t, HIST_BINS> &res_stddev_bins)
@@ -442,13 +443,11 @@ int main(){
     const long int strides_Cy[] = {1 * NXNYNZ * (NXNYNZ+1), 1 * NXNYNZ, 1};
     const long int strides_Cz[] = {1 * NXNYNZ * (NXNYNZ+1), 1 * (NXNYNZ+1), 1};
 
-    // TEMP
-    synth_turb.update_time(100);
 
     // Init Courants
-    // TODO: async (if CUDA)
     calc_courants(synth_turb, pCx, pCy, pCz, strides_Cx, strides_Cy, strides_Cz, dx, dt);
 
+/*
     for(int i = 0; i < NXNYNZ+1; ++i)
       for(int j = 0; j < NXNYNZ; ++j)
         for(int k = 0; k < NXNYNZ; ++k)
@@ -469,6 +468,7 @@ int main(){
         {
           std::cerr << " i: " << i << " j: " << j << " k: " << k << " Cz: " << pCz.at(i * strides_Cz[0] + j * strides_Cz[1] + k * strides_Cz[2]) << std::endl;
         }
+        */
 
     arrinfo_t<real_t> th(pth.data(), strides);
     arrinfo_t<real_t> rhod(prhod.data(), strides);
@@ -538,10 +538,24 @@ int main(){
 //        max_rw[0][large_cell_idx + rep * n_large_cells] = arr[j];
 //      max_rw_small[0][j + rep * n_cell] = arr[j];
 //    }
+
+    std::future<void> ftr;
   
     for(int i=1; i<=sim_time; ++i)
     {
-      two_step(prtcls.get(),th,rv,Cx,Cy,Cz,opts);
+      if(i>1) ftr.get();
+
+      prtcls->step_sync(opts,th,rv,arrinfo_t<real_t>(),Cx, Cy, Cz);
+
+      ftr = std::async(std::launch::async, [&] {
+        synth_turb.update_time(i*DT);
+        calc_courants(synth_turb, pCx, pCy, pCz, strides_Cx, strides_Cy, strides_Cz, dx, dt);
+      });
+
+      prtcls->step_async(opts);
+
+
+
       // get max rw
 //      prtcls->diag_max_rw();
 //      arr = prtcls->outbuf();
@@ -576,8 +590,8 @@ int main(){
       }
       mean_sd_conc /= real_t(n_cell);
   
-  printf("\rrep no: %3d progress: %3d%%: rw_max %lf mean_sd_conc %lf t10_tot %lf", rep, int(real_t(i) / sim_time * 100), rep_max_rw, mean_sd_conc, t10_tot[rep]);
-  std::cout << std::flush;
+      printf("\rrep no: %3d progress: %3d%%: rw_max %lf mean_sd_conc %lf t10_tot %lf", rep, int(real_t(i) / sim_time * 100), rep_max_rw, mean_sd_conc, t10_tot[rep]);
+      std::cout << std::flush;
   
       // get t10 (time to conver 10% of cloud water into rain water)
       prtcls->diag_wet_rng(40e-6, 1); // rain water (like in Onishi)
