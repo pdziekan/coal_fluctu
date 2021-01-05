@@ -27,19 +27,19 @@
 // #define HallDavis
 
 #define HIST_BINS 5001
-#define BACKEND OpenMP//multi_CUDA
+#define BACKEND multi_CUDA
 #define N_SD_MAX 4e8 //1e8
-#define NXNYNZ 10 //720 // number of cells in each direction
+#define NXNYNZ 100 //720 // number of cells in each direction
 #define SEDI 1
 #define RCYC 0
 #define N_REP 1e0
 #define SIMTIME 4000 // number of steps 
 #define NP 1e0 // init number of droplets per cell
-#define DT 0.01 // [s]
+#define DT 0.1 // [s]
 #define DISS_RATE 1 // [cm^2 / s^3]
 #define LKOL 1e-3 // Kolmogorov length scale[m]. Smallest synthetic eddies are od this size 
-#define NModes 4 // number of synthethic turbulence modes.
-#define NWaves 10 // (max)number of wave vectors for each synthethic turbulence mode.
+#define NModes 200 // number of synthethic turbulence modes.
+#define NWaves 50 // (max)number of wave vectors for each synthethic turbulence mode.
 
 using namespace std;
 using namespace libcloudphxx::lgrngn;
