@@ -17,7 +17,7 @@
 #include <time.h>
 #include <libcloudph++/common/earth.hpp>
 #include <numeric>
-#include <synth_turb/SynthTurb3d_periodic_box.hpp>
+#include <synth_turb/SynthTurb3d_periodic_box_multiwave.hpp>
 
 
 
@@ -36,8 +36,9 @@
 #define NP 1e0 // init number of droplets per cell
 #define DT 0.01 // [s]
 #define DISS_RATE 1 // [cm^2 / s^3]
-#define LKOL 1e-3 // Kolmogorov length scale[m]. not really used here? Periodic synth turb doesnt need it
-#define NWaves 6 // number of wave vectors for each synthethic turbulence mode. Needs to be 6 for periodic
+#define LKOL 1e-3 // Kolmogorov length scale[m]. Smallest synthetic eddies are od this size 
+#define NModes 4 // number of synthethic turbulence modes.
+#define NWaves 10 // (max)number of wave vectors for each synthethic turbulence mode.
 
 using namespace std;
 using namespace libcloudphxx::lgrngn;
@@ -92,9 +93,49 @@ const int n_large_cells = (nx * ny * nz) / n_cells_per_avg_r_max_cell;
 const int sstp_coal = 1;
 
 
- const int sd_const_multi = 1; const real_t sd_conc = 0; const bool tail = 0;
+const int sd_const_multi = 1; const real_t sd_conc = 0; const bool tail = 0;
 
 //  const int sd_const_multi = 0; const real_t sd_conc = 1e3; const bool tail = 1;
+
+
+// TODO: assert abs(courant)<1, albo adaptive timestep?
+template<class real_t>
+void calc_courants(SynthTurb::SynthTurb3d_periodic_box_multiwave<real_t, NModes, NWaves> &synth_turb, std::vector<real_t> &pCx, std::vector<real_t> &pCy, std::vector<real_t> &pCz, const long int strides_Cx[3], const long int strides_Cy[3], const long int strides_Cz[3], const real_t dx, const real_t dt)
+{
+  # pragma omp parallel for
+  for(int i = 0; i < NXNYNZ+1; ++i)
+    for(int j = 0; j < NXNYNZ; ++j)
+      for(int k = 0; k < NXNYNZ; ++k)
+      {
+        const real_t x[3] = {i * dx, (j+0.5) * dx, (k+0.5) * dx}; 
+        pCx.at(i * strides_Cx[0] + j * strides_Cx[1] + k * strides_Cx[2]) = synth_turb.template calculate_velocity_dir<0>(x);
+      }
+  # pragma omp parallel for
+  for(int i = 0; i < NXNYNZ; ++i)
+    for(int j = 0; j < NXNYNZ+1; ++j)
+      for(int k = 0; k < NXNYNZ; ++k)
+      {
+        const real_t x[3] = {(i+0.5) * dx, j * dx, (k+0.5) * dx}; 
+        pCy.at(i * strides_Cy[0] + j * strides_Cy[1] + k * strides_Cy[2]) = synth_turb.template calculate_velocity_dir<1>(x);
+      }
+  # pragma omp parallel for
+  for(int i = 0; i < NXNYNZ; ++i)
+    for(int j = 0; j < NXNYNZ; ++j)
+      for(int k = 0; k < NXNYNZ+1; ++k)
+      {
+        const real_t x[3] = {(i+0.5) * dx, (j+0.5) * dx, k * dx}; 
+        pCz.at(i * strides_Cz[0] + j * strides_Cz[1] + k * strides_Cz[2]) = synth_turb.template calculate_velocity_dir<2>(x);
+      }
+
+  # pragma omp parallel for
+  // velocities -> Courants
+  for(int i = 0; i < n_courant; ++i)
+  {
+    pCx.at(i) *= dt / dx;
+    pCy.at(i) *= dt / dx;
+    pCz.at(i) *= dt / dx;
+  }
+}
 
 // lognormal aerosol distribution
 template <typename T>
@@ -371,8 +412,9 @@ int main(){
 #endif
 
     // synthetic turbulence class
-    SynthTurb::SynthTurb3d_periodic_box<real_t, NXNYNZ, NWaves> synth_turb(DISS_RATE*1e-4, opts_init.x1, LKOL); // LMAX = x1, Nmodes = nx 
-    synth_turb.generate_random_modes();
+    std::cerr << "construting synth turb" << std::endl;
+    SynthTurb::SynthTurb3d_periodic_box_multiwave<real_t, NModes, NWaves> synth_turb(DISS_RATE*1e-4, opts_init.x1, LKOL); // LMAX = x1
+    std::cerr << "construting synth turb done" << std::endl;
 
     opts_init.SGS_mix_len = std::vector<real_t>(nz, opts_init.z1); // z1 because the whole domain is like a LES cell in which flow is not resolved
   
@@ -395,49 +437,17 @@ int main(){
     std::vector<real_t> pCy(n_courant);
     std::vector<real_t> pCz(n_courant);
   
-    //long int strides[] = {sizeof(real_t) * NXNYNZ * NXNYNZ, sizeof(real_t) * NXNYNZ, sizeof(real_t)};
-    long int strides[] = {1 * NXNYNZ * NXNYNZ, 1 * NXNYNZ, 1};
-    long int strides_Cx[] = {1 * NXNYNZ * NXNYNZ, 1 * NXNYNZ, 1};
-    long int strides_Cy[] = {1 * NXNYNZ * (NXNYNZ+1), 1 * NXNYNZ, 1};
-    long int strides_Cz[] = {1 * NXNYNZ * (NXNYNZ+1), 1 * (NXNYNZ+1), 1};
+    const long int strides[] = {1 * NXNYNZ * NXNYNZ, 1 * NXNYNZ, 1};
+    const long int strides_Cx[] = {1 * NXNYNZ * NXNYNZ, 1 * NXNYNZ, 1};
+    const long int strides_Cy[] = {1 * NXNYNZ * (NXNYNZ+1), 1 * NXNYNZ, 1};
+    const long int strides_Cz[] = {1 * NXNYNZ * (NXNYNZ+1), 1 * (NXNYNZ+1), 1};
+
+    // TEMP
+    synth_turb.update_time(100);
 
     // Init Courants
-    // calc courant x
     // TODO: async (if CUDA)
-    // TODO: jak uwzglednic periodycznosc w Arakawa-C
-    // TODO: assert abs(courant)<1, albo adaptive timestep?
-    # pragma omp parallel for
-    for(int i = 0; i < NXNYNZ+1; ++i)
-      for(int j = 0; j < NXNYNZ; ++j)
-        for(int k = 0; k < NXNYNZ; ++k)
-        {
-          const real_t x[3] = {i * dx, (j+0.5) * dy, (k+0.5) * dz}; 
-          pCx.at(i * strides_Cx[0] + j * strides_Cx[1] + k * strides_Cx[2]) = synth_turb.calculate_velocity_dir<0>(x, 0);
-        }
-    # pragma omp parallel for
-    for(int i = 0; i < NXNYNZ; ++i)
-      for(int j = 0; j < NXNYNZ+1; ++j)
-        for(int k = 0; k < NXNYNZ; ++k)
-        {
-          const real_t x[3] = {(i+0.5) * dx, j * dy, (k+0.5) * dz}; 
-          pCy.at(i * strides_Cy[0] + j * strides_Cy[1] + k * strides_Cy[2]) = synth_turb.calculate_velocity_dir<1>(x, 0);
-        }
-    # pragma omp parallel for
-    for(int i = 0; i < NXNYNZ; ++i)
-      for(int j = 0; j < NXNYNZ; ++j)
-        for(int k = 0; k < NXNYNZ+1; ++k)
-        {
-          const real_t x[3] = {(i+0.5) * dx, (j+0.5) * dy, k * dz}; 
-          pCz.at(i * strides_Cz[0] + j * strides_Cz[1] + k * strides_Cz[2]) = synth_turb.calculate_velocity_dir<2>(x, 0);
-        }
-
-    // velocities -> Courants
-    for(int i = 0; i < n_courant; ++i)
-    {
-      pCx.at(i) *= dt / dx;
-      pCy.at(i) *= dt / dx;
-      pCz.at(i) *= dt / dx;
-    }
+    calc_courants(synth_turb, pCx, pCy, pCz, strides_Cx, strides_Cy, strides_Cz, dx, dt);
 
     for(int i = 0; i < NXNYNZ+1; ++i)
       for(int j = 0; j < NXNYNZ; ++j)
