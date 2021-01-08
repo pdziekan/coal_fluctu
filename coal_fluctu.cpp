@@ -27,18 +27,18 @@
 // #define HallDavis
 
 #define HIST_BINS 5001
-#define BACKEND multi_CUDA
-#define N_SD_MAX 4e8 //1e8
-#define NXNYNZ 100 //720 // number of cells in each direction
+#define BACKEND CUDA
+#define N_SD_MAX 1e8 //1e8
+#define NXNYNZ 50 //720 // number of cells in each direction
 #define SEDI 1
 #define RCYC 0
-#define N_REP 1e0
+#define N_REP 1e1
 #define SIMTIME 4000 // number of steps 
 #define NP 1e0 // init number of droplets per cell
 #define DT 0.1 // [s]
 #define DISS_RATE 1 // [cm^2 / s^3]
 #define LKOL 1e-3 // Kolmogorov length scale[m]. Smallest synthetic eddies are od this size 
-#define NModes 200 // number of synthethic turbulence modes.
+#define NModes 50 // number of synthethic turbulence modes.
 #define NWaves 50 // (max)number of wave vectors for each synthethic turbulence mode.
 
 using namespace std;
@@ -289,7 +289,7 @@ void diag(particles_proto_t<real_t> *prtcls, std::array<real_t, HIST_BINS> &res_
 
 
 int main(){
-  std::cerr << "main start" << std::endl;
+//  std::cerr << "main start" << std::endl;
 
   // sanity check
 #ifdef Onishi
@@ -327,12 +327,15 @@ int main(){
             << " sedi = " << SEDI
             << " rcyc = " << RCYC
             << " backend = " << BACKEND
+            << " NModes = " << NModes
+            << " NWaves = " << NWaves
             << std::endl;
 
   std::cout << std::flush;
 
   std::ofstream of_size_spectr("size_spectr.dat");
   std::ofstream of_max_drop_vol("max_drop_vol.dat");
+  std::ofstream of_t10_tot("t10_tot.dat");
 
   std::vector<real_t> init_cloud_mass(n_cell);
   std::vector<real_t> init_rain_mass(n_cell);
@@ -437,9 +440,9 @@ int main(){
 #endif
 
     // synthetic turbulence class
-    std::cerr << "construting synth turb" << std::endl;
+//    std::cerr << "construting synth turb" << std::endl;
     SynthTurb::SynthTurb3d_periodic_box_multiwave<real_t, NModes, NWaves> synth_turb(DISS_RATE*1e-4, opts_init.x1, LKOL); // LMAX = x1
-    std::cerr << "construting synth turb done" << std::endl;
+//    std::cerr << "construting synth turb done" << std::endl;
 
     opts_init.SGS_mix_len = std::vector<real_t>(nz, opts_init.z1); // z1 because the whole domain is like a LES cell in which flow is not resolved
   
@@ -480,7 +483,7 @@ int main(){
     arrinfo_t<real_t> Cz(pCz.data(), strides_Cz);
 
     prtcls->init(th,rv,rhod, arrinfo_t<real_t>(), Cx, Cy, Cz);
-    std::cerr << "post init" << std::endl;
+//    std::cerr << "post init" << std::endl;
   
     opts_t<real_t> opts;
     opts.adve = 1;
@@ -606,8 +609,6 @@ int main(){
 //        tau[i][j + rep * n_cell] = arr[j];// / init_cloud_mass[j];
         cloud_mass_tot += arr[j];
       }
-      if(t10_tot[rep] == 0. && cloud_mass_tot >= init_tot_cloud_mass * .1)
-        t10_tot[rep] =  i * opts_init.dt;
 
 //      prtcls->diag_wet_mom(0);
 //      arr = prtcls->outbuf();
@@ -621,6 +622,12 @@ int main(){
 //      arr = prtcls->outbuf();
 //      for(int j=0; j<n_cell; ++j)
 //        if(arr[j] > 0) tau[i][j + rep * n_cell] /= arr[j]; // to avoid (small) variability in LWC?
+      if(t10_tot[rep] == 0. && cloud_mass_tot >= init_tot_cloud_mass * .1)
+      {
+        t10_tot[rep] =  i * opts_init.dt;
+        of_t10_tot << t10_tot[rep] << std::endl;
+        continue;
+      }
     }
   
     std::cout << std::endl << "po symulacji, max_rw: " << rep_max_rw << std::endl;
@@ -714,7 +721,7 @@ int main(){
 //    // 12 - skew max rw large 13 - kurt max rw large 14 - mean tau(rain_mass/tot_mass) 
 //    // 15 - std_dev tau 16 - mean_nrain
 //    of_max_drop_vol << i * dt << " " << mean_max_vol_small << " " << std_dev_max_vol_small << " " << mean_max_rad << " " << std_dev_max_rad << " " << glob_max_rad << " " << max_rw_small[i][max_growth_idx] << " " << mean_max_rad_small << " " << std_dev_max_rad_small << " " << skew_max_rad_small << " " << kurt_max_rad_small << " " << skew_max_rad_large << " " << kurt_max_rad_large << " " << mean_tau << " " << std_dev_tau << " " << mean_nrain << std::endl; 
-  } // end of the simulation loop
+  }
 
 //
 //  // cailc how much the radius of the lucky fraction of small cells increased!!
@@ -830,11 +837,15 @@ int main(){
 //  std::cout << "mean(t10%) = " << mean_t10 << std::endl;
 //  std::cout << "realtive std_dev(t10%) = " << std_dev / mean_t10 << std::endl;
 //
-//  real_t mean_t10_tot;
-//  for(int j=0; j<n_rep; ++j)
-//    mean_t10_tot += t10_tot[j];
-//  mean_t10_tot /= n_rep;
-//  std::cout << "mean(t10% in the domain) = " << mean_t10_tot << std::endl;
+  real_t mean_t10_tot=0, std_dev_t10_tot=0;
+  for(int j=0; j<n_rep; ++j)
+    mean_t10_tot += t10_tot[j];
+  mean_t10_tot /= n_rep;
+  for(int j=0; j<n_rep; ++j)
+    std_dev_t10_tot += pow(t10_tot[j] - mean_t10_tot,2);
+  std_dev_t10_tot = sqrt(std_dev_t10_tot / (n_rep-1));
+  std::cout << "mean(t10% in the domain) = " << mean_t10_tot << std::endl;
+  std::cout << "std_dev(t10% in the domain) = " << std_dev_t10_tot << std::endl;
 //
 //  // calc and print out mean tau10 and tau10 std_dev
 //  const int mean_t10_idx = mean_t10 / dt + 0.5;
