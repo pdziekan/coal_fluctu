@@ -25,21 +25,21 @@
 //#define Onishi
 #define Wang
 #define cutoff 40e-6
-// #define HallDavis
+#define HallDavis
 
 #define HIST_BINS 5001
 #define BACKEND CUDA
 #define N_SD_MAX 1e8 //1e8
-#define NXNYNZ 10 //720 // number of cells in each direction
+#define NXNYNZ 20 //720 // number of cells in each direction
 #define SEDI 1
 #define RCYC 0
 #define N_REP 1e1
 #define SIMTIME 50000 // number of steps 
-#define NP 1e4 // init number of droplets per cell
+#define NP 1e3 // init number of droplets per cell
 #define DT 0.1 // [s]
 #define DISS_RATE 1 // [cm^2 / s^3]
 #define LKOL 1e-3 // Kolmogorov length scale[m]. Smallest synthetic eddies are od this size 
-#define NModes 10 // number of synthethic turbulence modes.
+#define NModes 20 // number of synthethic turbulence modes.
 #define NWaves 50 // (max)number of wave vectors for each synthethic turbulence mode.
 
 
@@ -119,7 +119,7 @@ const int sd_const_multi = 1; const real_t sd_conc = 0; const bool tail = 0;
 
 // TODO: assert abs(courant)<1, albo adaptive timestep?
 template<class real_t>
-void calc_courants(SynthTurb::SynthTurb3d_periodic_box_multiwave<real_t, NModes, NWaves> &synth_turb, std::vector<real_t> &pCx, std::vector<real_t> &pCy, std::vector<real_t> &pCz, const long int strides_Cx[3], const long int strides_Cy[3], const long int strides_Cz[3], const real_t dx, const real_t dt)
+real_t calc_courants(SynthTurb::SynthTurb3d_periodic_box_multiwave<real_t, NModes, NWaves> &synth_turb, std::vector<real_t> &pCx, std::vector<real_t> &pCy, std::vector<real_t> &pCz, const long int strides_Cx[3], const long int strides_Cy[3], const long int strides_Cz[3], const real_t dx, const real_t dt)
 {
   # pragma omp parallel for
   for(int i = 0; i < NXNYNZ+1; ++i)
@@ -154,6 +154,12 @@ void calc_courants(SynthTurb::SynthTurb3d_periodic_box_multiwave<real_t, NModes,
     pCy.at(i) *= dt / dx;
     pCz.at(i) *= dt / dx;
   }
+
+  // find largest courant
+  real_t Cmax = *std::max_element(pCx.begin(), pCx.end(), [](const real_t& a, const real_t& b) {return abs(a) < abs(b);});
+  Cmax = std::max(abs(Cmax), abs(*std::max_element(pCy.begin(), pCy.end(), [](const real_t& a, const real_t& b) {return abs(a) < abs(b);})));
+  Cmax = std::max(abs(Cmax), abs(*std::max_element(pCz.begin(), pCz.end(), [](const real_t& a, const real_t& b) {return abs(a) < abs(b);})));
+  return Cmax;
 }
 
 /*
@@ -317,26 +323,33 @@ int main(){
 //    throw std::runtime_error("n_cell nie jest wilokrotnoscia n_cells_per_avg_r_max_cell");
 //#endif
 
+
+  std::ofstream of_size_spectr("size_spectr.dat");
+  std::ofstream of_series("series.dat");
+  std::ofstream of_tau("tau.dat");
+  std::ofstream of_setup("setup.dat");
+  std::ofstream of_t10_tot("t10_tot.dat");
+
 #ifdef cutoff
-  std::cout << "init distr cutoff at " << cutoff << " microns!" << std::endl;
+  of_setup << "init distr cutoff at " << cutoff << " microns!" << std::endl;
 #endif
 
 #ifdef Onishi
-  std::cout << "Onishi (expvolume) run!" << std::endl;
+  of_setup << "Onishi (expvolume) run!" << std::endl;
 #elif defined Wang
-  std::cout << "Wang (expvolume) run!" << std::endl;
+  of_setup << "Wang (expvolume) run!" << std::endl;
 #endif
 
 #if defined Onishi || defined Wang
-  std::cout << "Np = " << Np << std::endl;
-  std::cout << "Np per avg cell = " << Np_in_avg_r_max_cell << std::endl;
+  of_setup << "Np = " << Np << std::endl;
+  of_setup << "Np per avg cell = " << Np_in_avg_r_max_cell << std::endl;
 #else
-  std::cout << "Alfonso (bi-disperse) run!" << std::endl;
+  of_setup << "Alfonso (bi-disperse) run!" << std::endl;
 #endif
-  std::cout << "dx = " << dx * 1e2  << "cm (cell vol = " << cell_vol * 1e6 << " cm^3)"<< std::endl;
-  std::cout << "x1 = " << dx * nx * 1e2  << "cm (domain vol = "<< dx * nx * dy * ny * dz * nz  << " m^3)" << std::endl;
+  of_setup << "dx = " << dx * 1e2  << "cm (cell vol = " << cell_vol * 1e6 << " cm^3)"<< std::endl;
+  of_setup << "x1 = " << dx * nx * 1e2  << "cm (domain vol = "<< dx * nx * dy * ny * dz * nz  << " m^3)" << std::endl;
 
-  std::cout << "n_rep = " << n_rep 
+  of_setup << "n_rep = " << n_rep 
 //            << " n_large_cells = " << n_large_cells
             << " n_cell = " << n_cell
             << " sim_time = " << sim_time
@@ -354,13 +367,15 @@ int main(){
             << " NWaves = " << NWaves
             << " Lmin = " << Lmin
             << " Lmax = " << Lmax
+#ifdef HallDavis
+            << " kernel: Hall & Davis"
+#else
+            << " kernel: Hall"
+#endif
             << std::endl;
 
-  std::cout << std::flush;
+  of_setup << std::flush;
 
-  std::ofstream of_size_spectr("size_spectr.dat");
-  std::ofstream of_series("series.dat");
-  std::ofstream of_t10_tot("t10_tot.dat");
 
   std::vector<real_t> init_cloud_mass(n_cell);
   std::vector<real_t> init_rain_mass(n_cell);
@@ -567,17 +582,18 @@ int main(){
 //      max_rw_small[0][j + rep * n_cell] = arr[j];
 //    }
 
-    std::future<void> ftr;
+    std::future<real_t> ftr;
+    real_t Cmax = 0;
   
     for(int i=1; i<=sim_time; ++i)
     {
-      if(i>1) ftr.get();
+      if(i>1) Cmax = ftr.get();
 
       prtcls->step_sync(opts,th,rv,arrinfo_t<real_t>(),Cx, Cy, Cz);
 
-      ftr = std::async(std::launch::async, [&] {
+      ftr = std::async(std::launch::async, [&]() -> real_t {
         synth_turb.update_time(i*DT);
-        calc_courants(synth_turb, pCx, pCy, pCz, strides_Cx, strides_Cy, strides_Cz, dx, dt);
+        return calc_courants(synth_turb, pCx, pCy, pCz, strides_Cx, strides_Cy, strides_Cz, dx, dt);
       });
 
       prtcls->step_async(opts);
@@ -585,11 +601,11 @@ int main(){
 
 
       // get max rw
-//      prtcls->diag_max_rw();
-//      arr = prtcls->outbuf();
+      prtcls->diag_max_rw();
+      arr = prtcls->outbuf();
 //      int large_cell_idx = -1;
-//      for(int j=0; j<n_cell; ++j)
-//      {
+      for(int j=0; j<n_cell; ++j)
+      {
 //  //      real_t large_cell_max_rw;
 //        if(j % n_cells_per_avg_r_max_cell == 0)
 //        {
@@ -597,7 +613,7 @@ int main(){
 //          large_cell_idx++;
 //          max_rw[i][large_cell_idx + rep * n_large_cells] = 0.;//large_cell_max_rw;
 //        }
-//        if(arr[j] > rep_max_rw) rep_max_rw = arr[j];
+        if(arr[j] > rep_max_rw) rep_max_rw = arr[j];
 //        if(arr[j] > max_rw[i][large_cell_idx + rep * n_large_cells])
 //          max_rw[i][large_cell_idx + rep * n_large_cells] = arr[j];
 //        max_rw_small[i][j + rep * n_cell] = arr[j];
@@ -605,7 +621,7 @@ int main(){
 //        // get time for max_rw to reach 40um
 //        if(t_max_40[j + rep * n_cell] == 0. && arr[j] >= 40e-6)
 //          t_max_40[j + rep * n_cell] = i * opts_init.dt; 
-//      }
+      }
 
       // get mean_sd_conc
       prtcls->diag_all();
@@ -618,7 +634,7 @@ int main(){
       }
       mean_sd_conc /= real_t(n_cell);
   
-      printf("\rrep no: %3d progress: %3d%%: rw_max %lf mean_sd_conc %lf t10_tot %lf", rep, int(real_t(i) / sim_time * 100), rep_max_rw, mean_sd_conc, t10_tot[rep]);
+      printf("\rrep no: %3d progress: %3d%%: rw_max %lf mean_sd_conc %lf max_courant %lf t10_tot %lf", rep, int(real_t(i) / sim_time * 100), rep_max_rw, mean_sd_conc, Cmax, t10_tot[rep]);
       std::cout << std::flush;
   
       // get t10 (time to conver 10% of cloud water into rain water)
@@ -634,6 +650,7 @@ int main(){
         rain_mass_tot += arr[j];
       }
       tau[i][rep] = rain_mass_tot / init_tot_cloud_mass;
+      of_tau << tau[i][rep] << " ";
 
 //      prtcls->diag_wet_mom(0);
 //      arr = prtcls->outbuf();
@@ -654,6 +671,7 @@ int main(){
         of_t10_tot << t10_tot[rep] << std::endl;
       }
     }
+    of_tau << std::endl;
   
     std::cout << std::endl << "po symulacji, max_rw: " << rep_max_rw << std::endl;
   
