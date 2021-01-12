@@ -22,24 +22,31 @@
 
 
 
- #define Onishi
- #define cutoff 40e-6
+//#define Onishi
+#define Wang
+#define cutoff 40e-6
 // #define HallDavis
 
 #define HIST_BINS 5001
 #define BACKEND CUDA
 #define N_SD_MAX 1e8 //1e8
-#define NXNYNZ 100 //720 // number of cells in each direction
+#define NXNYNZ 10 //720 // number of cells in each direction
 #define SEDI 1
 #define RCYC 0
 #define N_REP 1e1
-#define SIMTIME 4000 // number of steps 
-#define NP 1e0 // init number of droplets per cell
+#define SIMTIME 50000 // number of steps 
+#define NP 1e4 // init number of droplets per cell
 #define DT 0.1 // [s]
 #define DISS_RATE 1 // [cm^2 / s^3]
 #define LKOL 1e-3 // Kolmogorov length scale[m]. Smallest synthetic eddies are od this size 
-#define NModes 50 // number of synthethic turbulence modes.
+#define NModes 10 // number of synthethic turbulence modes.
 #define NWaves 50 // (max)number of wave vectors for each synthethic turbulence mode.
+
+
+
+#if defined Onishi && defined Wang
+  #error Both Wang and Onishi defined
+#endif
 
 using namespace std;
 using namespace libcloudphxx::lgrngn;
@@ -51,16 +58,24 @@ namespace theta_std = libcloudphxx::common::theta_std;
 namespace theta_dry = libcloudphxx::common::theta_dry;
 namespace lognormal = libcloudphxx::common::lognormal;
 
+#ifdef Onishi
 const quantity<si::length, real_t>
-  mean_rd1 = real_t(15e-6) * si::metres;  // Onishi
+  mean_rd1 = real_t(15e-6) * si::metres;  
+const quantity<power_typeof_helper<si::length, static_rational<-3>>::type, real_t>
+  n1_stp = real_t(142e6) / si::cubic_metres; 
+#endif
+
+#ifdef Wang
+const quantity<si::length, real_t>
+  mean_rd1 = real_t(9.3e-6) * si::metres;  // WANG 2007 (and Unterstrasser 2017)
+const quantity<power_typeof_helper<si::length, static_rational<-3>>::type, real_t>
+  n1_stp = real_t(297e6) / si::cubic_metres; // WANG 2007 (and Unter 2017)
+#endif
+
 //  mean_rd1 = real_t(0.02e-6) * si::metres;  // api_lgrngn
-//  mean_rd1 = real_t(9.3e-6) * si::metres;  // WANG 2007 (and Unterstrasser 2017)
 //  mean_rd1 = real_t(10.177e-6) * si::metres;  // Shima small
 const quantity<si::dimensionless, real_t>
   sdev_rd1 = real_t(1.4);
-const quantity<power_typeof_helper<si::length, static_rational<-3>>::type, real_t>
-  n1_stp = real_t(142e6) / si::cubic_metres; // Onishi
-//  n1_stp = real_t(297e6) / si::cubic_metres; // WANG 2007 (and Unter 2017)
 //  n1_stp = real_t(60e6) / si::cubic_metres; // api_lgrngn
 //  n1_stp = real_t(226.49e6) / si::cubic_metres; // Shima small
 
@@ -76,23 +91,26 @@ const int nz = NXNYNZ;
 constexpr int n_cell = NXNYNZ * NXNYNZ * NXNYNZ;
 constexpr int n_courant = (NXNYNZ+1) * NXNYNZ * NXNYNZ;
 
-const real_t dt = DT;
-const real_t Np = NP; // number of droplets per simulation (collision cell)
-const real_t Np_in_avg_r_max_cell = Np; // number of droplets per large cells in which we look for r_max
+constexpr real_t dt = DT;
+constexpr real_t Np = NP; // number of droplets per simulation (collision cell)
+constexpr real_t Np_in_avg_r_max_cell = Np; // number of droplets per large cells in which we look for r_max
 //#ifdef Onishi
-  const int n_cells_per_avg_r_max_cell = Np_in_avg_r_max_cell / Np;
-  const real_t cell_vol = Np /  (n1_stp * si::cubic_metres); // for Onishi comparison
-  const real_t dx = pow(cell_vol, real_t(1./3.));
-  const real_t dy = pow(cell_vol, real_t(1./3.));
-  const real_t dz = pow(cell_vol, real_t(1./3.));
+//  const int n_cells_per_avg_r_max_cell = Np_in_avg_r_max_cell / Np;
+  constexpr real_t cell_vol = Np /  (n1_stp * si::cubic_metres); // for Onishi comparison
+  constexpr real_t dx = pow(cell_vol, real_t(1./3.));
+  constexpr real_t dy = pow(cell_vol, real_t(1./3.));
+  constexpr real_t dz = pow(cell_vol, real_t(1./3.));
 //#else
 //  const int n_cells_per_avg_r_max_cell = 1; // r_max in each small cell separately
 //  const real_t dx = 1e-6; // for bi-disperse (alfonso) comparison
 //  const real_t dx = 1e6; // for Shima comparison
 //#endif
-const int n_large_cells = (nx * ny * nz) / n_cells_per_avg_r_max_cell;
+//const int n_large_cells = (nx * ny * nz) / n_cells_per_avg_r_max_cell;
 const int sstp_coal = 1;
 
+// sizes of smallest and largest eddies from the synthetic turbulence scheme
+const real_t Lmin = std::max(dx, real_t(LKOL));
+const real_t Lmax = nx * dx;
 
 const int sd_const_multi = 1; const real_t sd_conc = 0; const bool tail = 0;
 
@@ -292,12 +310,12 @@ int main(){
 //  std::cerr << "main start" << std::endl;
 
   // sanity check
-#ifdef Onishi
-  if(n_cells_per_avg_r_max_cell * Np != Np_in_avg_r_max_cell)
-    throw std::runtime_error("Np_in_avg_r_max_cell nie jest wilokrotnoscia Np");
-  if(n_large_cells * n_cells_per_avg_r_max_cell != n_cell)
-    throw std::runtime_error("n_cell nie jest wilokrotnoscia n_cells_per_avg_r_max_cell");
-#endif
+//#ifdef Onishi
+//  if(n_cells_per_avg_r_max_cell * Np != Np_in_avg_r_max_cell)
+//    throw std::runtime_error("Np_in_avg_r_max_cell nie jest wilokrotnoscia Np");
+//  if(n_large_cells * n_cells_per_avg_r_max_cell != n_cell)
+//    throw std::runtime_error("n_cell nie jest wilokrotnoscia n_cells_per_avg_r_max_cell");
+//#endif
 
 #ifdef cutoff
   std::cout << "init distr cutoff at " << cutoff << " microns!" << std::endl;
@@ -305,6 +323,11 @@ int main(){
 
 #ifdef Onishi
   std::cout << "Onishi (expvolume) run!" << std::endl;
+#elif defined Wang
+  std::cout << "Wang (expvolume) run!" << std::endl;
+#endif
+
+#if defined Onishi || defined Wang
   std::cout << "Np = " << Np << std::endl;
   std::cout << "Np per avg cell = " << Np_in_avg_r_max_cell << std::endl;
 #else
@@ -314,7 +337,7 @@ int main(){
   std::cout << "x1 = " << dx * nx * 1e2  << "cm (domain vol = "<< dx * nx * dy * ny * dz * nz  << " m^3)" << std::endl;
 
   std::cout << "n_rep = " << n_rep 
-            << " n_large_cells = " << n_large_cells
+//            << " n_large_cells = " << n_large_cells
             << " n_cell = " << n_cell
             << " sim_time = " << sim_time
             << " dt = " << dt
@@ -329,12 +352,14 @@ int main(){
             << " backend = " << BACKEND
             << " NModes = " << NModes
             << " NWaves = " << NWaves
+            << " Lmin = " << Lmin
+            << " Lmax = " << Lmax
             << std::endl;
 
   std::cout << std::flush;
 
   std::ofstream of_size_spectr("size_spectr.dat");
-  std::ofstream of_max_drop_vol("max_drop_vol.dat");
+  std::ofstream of_series("series.dat");
   std::ofstream of_t10_tot("t10_tot.dat");
 
   std::vector<real_t> init_cloud_mass(n_cell);
@@ -345,7 +370,7 @@ int main(){
 //  std::vector<real_t> t10(n_cell * n_rep, 0);
   std::vector<real_t> t10_tot(n_rep, 0);
 //  std::vector<real_t> t_max_40(n_cell * n_rep, 0);// = new real_t[n_cell * n_rep];
-//  std::vector<std::vector<real_t>> tau           (sim_time+1, std::vector<real_t>(n_cell*n_rep)); // ratio of rain mass to LWC
+  std::vector<std::vector<real_t>> tau           (sim_time+1, std::vector<real_t>(n_rep)); // ratio of rain mass to LWC
 //  std::vector<std::vector<real_t>> nrain         (sim_time+1, std::vector<real_t>(n_cell*n_rep)); // number of rain drops
 //  std::vector<std::vector<real_t>> max_rw        (sim_time+1, std::vector<real_t>(n_rep * n_large_cells)); // max rw per large (averaging) cell
 //  std::vector<std::vector<real_t>> max_rw_small  (sim_time+1, std::vector<real_t>(n_rep * n_cell)); // max rw^3 per small cells (to compare with Alfonso)
@@ -423,12 +448,11 @@ int main(){
 //      0. // key
 //    ); 
 
-#ifdef Onishi
+#if defined Onishi || defined Wang
     opts_init.dry_distros.emplace(
-      0.1, //0 // key (kappa)
+      0, //0 // key (kappa)
       std::make_shared<exp_dry_radii<real_t>> () // value
     );
-
 #else
     opts_init.dry_sizes.emplace(
       0, //0 // key (kappa)
@@ -441,7 +465,7 @@ int main(){
 
     // synthetic turbulence class
 //    std::cerr << "construting synth turb" << std::endl;
-    SynthTurb::SynthTurb3d_periodic_box_multiwave<real_t, NModes, NWaves> synth_turb(DISS_RATE*1e-4, opts_init.x1, LKOL); // LMAX = x1
+    SynthTurb::SynthTurb3d_periodic_box_multiwave<real_t, NModes, NWaves> synth_turb(DISS_RATE*1e-4, Lmax, Lmin);
 //    std::cerr << "construting synth turb done" << std::endl;
 
     opts_init.SGS_mix_len = std::vector<real_t>(nz, opts_init.z1); // z1 because the whole domain is like a LES cell in which flow is not resolved
@@ -609,6 +633,7 @@ int main(){
 //        tau[i][j + rep * n_cell] = arr[j];// / init_cloud_mass[j];
         rain_mass_tot += arr[j];
       }
+      tau[i][rep] = rain_mass_tot / init_tot_cloud_mass;
 
 //      prtcls->diag_wet_mom(0);
 //      arr = prtcls->outbuf();
@@ -624,7 +649,7 @@ int main(){
 //        if(arr[j] > 0) tau[i][j + rep * n_cell] /= arr[j]; // to avoid (small) variability in LWC?
       if(t10_tot[rep] == 0. && rain_mass_tot >= init_tot_cloud_mass * .1)
       {
-std::cerr << "i: " << i << "rain_mass_tot: " << rain_mass_tot << " init_tot_cloud_mass: " << init_tot_cloud_mass << std::endl;
+//std::cerr << "i: " << i << "rain_mass_tot: " << rain_mass_tot << " init_tot_cloud_mass: " << init_tot_cloud_mass << std::endl;
         t10_tot[rep] =  i * opts_init.dt;
         of_t10_tot << t10_tot[rep] << std::endl;
       }
@@ -675,19 +700,19 @@ std::cerr << "i: " << i << "rain_mass_tot: " << rain_mass_tot << " init_tot_clou
 //      mean_max_rad += max_rw[i][j];
 //      if(max_rw[i][j] > glob_max_rad) glob_max_rad = max_rw[i][j];
 //    }
-//    for(int j=0; j < n_cell * n_rep; ++j)
-//    {
+    for(int j=0; j < n_rep; ++j)
+    {
 //      mean_max_vol_small += pow(max_rw_small[i][j], 3.);
 //      mean_max_rad_small += max_rw_small[i][j];
-//      mean_tau += tau[i][j];
+      mean_tau += tau[i][j];
 //      mean_nrain += nrain[i][j];
-//    }
+    }
 //
 //
 //    mean_max_rad /= real_t(n_large_cells * n_rep);
 //    mean_max_rad_small /= real_t(n_cell * n_rep);
 //    mean_max_vol_small /= real_t(n_cell * n_rep);
-//    mean_tau /= real_t(n_cell * n_rep);
+    mean_tau /= real_t(n_rep);
 //    mean_nrain /= real_t(n_cell * n_rep);
 //
 //
@@ -697,19 +722,19 @@ std::cerr << "i: " << i << "rain_mass_tot: " << rain_mass_tot << " init_tot_clou
 //      skew_max_rad_large += std::pow(max_rw[i][j] - mean_max_rad, 3); 
 //      kurt_max_rad_large += std::pow(max_rw[i][j] - mean_max_rad, 4); 
 //    }
-//    for(int j=0; j < n_cell * n_rep; ++j)
-//    {
+    for(int j=0; j < n_rep; ++j)
+    {
 //      std_dev_max_vol_small += std::pow(pow(max_rw_small[i][j], 3.) / mean_max_vol_small - 1, 2); // relative std dev of mass of largest one
 //      std_dev_max_rad_small += std::pow(max_rw_small[i][j] - mean_max_rad_small, 2); 
-//      std_dev_tau += std::pow(tau[i][j] - mean_tau, 2); 
+      std_dev_tau += std::pow(tau[i][j] - mean_tau, 2); 
 //      skew_max_rad_small += std::pow(max_rw_small[i][j] - mean_max_rad_small, 3); 
 //      kurt_max_rad_small += std::pow(max_rw_small[i][j] - mean_max_rad_small, 4); 
-//    }
+    }
 //
 //    kurt_max_rad_small = kurt_max_rad_small / (n_cell * n_rep) / pow(std_dev_max_rad_small / (n_cell * n_rep), 2.);
 //    std_dev_max_vol_small = std::sqrt(std_dev_max_vol_small / (n_cell * n_rep-1));
 //    std_dev_max_rad_small = std::sqrt(std_dev_max_rad_small / (n_cell * n_rep-1));
-//    std_dev_tau = std::sqrt(std_dev_tau / (n_cell * n_rep-1));
+    std_dev_tau = std::sqrt(std_dev_tau / (n_rep-1));
 //    skew_max_rad_small = skew_max_rad_small / (n_cell * n_rep) / pow(std_dev_max_rad_small, 3.);
 //
 //    kurt_max_rad_large = kurt_max_rad_large / (n_large_cells * n_rep) / pow(std_dev_max_rad / (n_large_cells * n_rep), 2.);
@@ -721,6 +746,8 @@ std::cerr << "i: " << i << "rain_mass_tot: " << rain_mass_tot << " init_tot_clou
 //    // 12 - skew max rw large 13 - kurt max rw large 14 - mean tau(rain_mass/tot_mass) 
 //    // 15 - std_dev tau 16 - mean_nrain
 //    of_max_drop_vol << i * dt << " " << mean_max_vol_small << " " << std_dev_max_vol_small << " " << mean_max_rad << " " << std_dev_max_rad << " " << glob_max_rad << " " << max_rw_small[i][max_growth_idx] << " " << mean_max_rad_small << " " << std_dev_max_rad_small << " " << skew_max_rad_small << " " << kurt_max_rad_small << " " << skew_max_rad_large << " " << kurt_max_rad_large << " " << mean_tau << " " << std_dev_tau << " " << mean_nrain << std::endl; 
+//
+    of_series << i * dt << " "  << mean_tau << " " << std_dev_tau << " " <<  std::endl; 
   }
 
 //
