@@ -29,7 +29,7 @@
 #define HIST_BINS 5001
 #define BACKEND CUDA
 #define N_SD_MAX 1e8 //1e8
-#define NXNYNZ 50 //720 // number of cells in each direction
+#define NXNYNZ 100 //720 // number of cells in each direction
 #define SEDI 1
 #define RCYC 0
 #define N_REP 1e1
@@ -601,13 +601,13 @@ int main(){
       prtcls->diag_wet_rng(40e-6, 1); // rain water (like in Onishi)
       prtcls->diag_wet_mom(3);
       arr = prtcls->outbuf();
-      real_t cloud_mass_tot = 0;
+      real_t rain_mass_tot = 0;
       for(int j=0; j<n_cell; ++j)
       {
 //        if(t10[j + rep * n_cell] == 0. && arr[j] >= init_cloud_mass[j] * .1)
 //          t10[j + rep * n_cell] = i * opts_init.dt;
 //        tau[i][j + rep * n_cell] = arr[j];// / init_cloud_mass[j];
-        cloud_mass_tot += arr[j];
+        rain_mass_tot += arr[j];
       }
 
 //      prtcls->diag_wet_mom(0);
@@ -622,11 +622,11 @@ int main(){
 //      arr = prtcls->outbuf();
 //      for(int j=0; j<n_cell; ++j)
 //        if(arr[j] > 0) tau[i][j + rep * n_cell] /= arr[j]; // to avoid (small) variability in LWC?
-      if(t10_tot[rep] == 0. && cloud_mass_tot >= init_tot_cloud_mass * .1)
+      if(t10_tot[rep] == 0. && rain_mass_tot >= init_tot_cloud_mass * .1)
       {
+std::cerr << "i: " << i << "rain_mass_tot: " << rain_mass_tot << " init_tot_cloud_mass: " << init_tot_cloud_mass << std::endl;
         t10_tot[rep] =  i * opts_init.dt;
         of_t10_tot << t10_tot[rep] << std::endl;
-        continue;
       }
     }
   
