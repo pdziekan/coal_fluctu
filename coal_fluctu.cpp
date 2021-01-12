@@ -12,6 +12,7 @@
 #include <libcloudph++/common/hydrostatic.hpp>
 #include <libcloudph++/common/theta_std.hpp>
 #include <libcloudph++/common/theta_dry.hpp>
+#include <libcloudph++/common/vterm.hpp>
 #include <libcloudph++/common/lognormal.hpp>
 #include <libcloudph++/common/unary_function.hpp>
 #include <time.h>
@@ -82,7 +83,6 @@ const quantity<si::dimensionless, real_t>
 
 //globals
 std::array<real_t, HIST_BINS> rad_bins;
-real_t rho_stp_f;
 const int n_rep = N_REP; // number of repetitions of simulation
 const int sim_time=SIMTIME; //2500;//500;//2500; // 2500 steps
 const int nx = NXNYNZ; // total number of collision cells
@@ -112,8 +112,18 @@ const int sstp_coal = 1;
 const real_t Lmin = std::max(dx, real_t(LKOL));
 const real_t Lmax = nx * dx;
 
-const int sd_const_multi = 1; const real_t sd_conc = 0; const bool tail = 0;
+const real_t theta_val = 300;
+const real_t rv_val = 0.01;
 
+const auto rho_stp_f = (libcloudphxx::common::earth::rho_stp<real_t>() / si::kilograms * si::cubic_metres);
+const auto temperature = libcloudphxx::common::theta_dry::T<real_t>(theta_val * si::kelvins, rho_stp_f * si::kilograms / si::cubic_meters);
+const auto pressure = libcloudphxx::common::theta_dry::p<real_t>(rho_stp_f * si::kilograms / si::cubic_meters, rv_val, temperature);
+const auto visc = libcloudphxx::common::vterm::visc(temperature);
+
+
+
+
+const int sd_const_multi = 1; const real_t sd_conc = 0; const bool tail = 0;
 //  const int sd_const_multi = 0; const real_t sd_conc = 1e3; const bool tail = 1;
 
 
@@ -263,7 +273,11 @@ void diag(particles_proto_t<real_t> *prtcls, std::array<real_t, HIST_BINS> &res_
     sum += out[c];
   std::cout << "3rd wet mom mean: " << sum / n_cell << std::endl;
 
-  std::cout << "max possible rad (based on mean 3rd wet mom): " << pow(sum/n_cell * rho_stp_f * cell_vol, 1./3.) << std::endl;
+  real_t r_max_poss = pow(real_t(sum/n_cell * rho_stp_f * cell_vol), real_t(1./3.));
+  real_t vt_max_poss = libcloudphxx::common::vterm::vt_beard76(r_max_poss * si::meters, temperature, pressure, rho_stp_f * si::kilograms / si::cubic_meters, visc) * si::seconds / si::meters;
+
+  std::cout << "max possible rad (based on mean 3rd wet mom): " << r_max_poss << std::endl;
+  std::cout << "max possible sedimentation courant (based on mean 3rd wet mom): " << vt_max_poss * DT / dx << std::endl;
 
   // get spectrum
   for (int i=0; i <rad_bins.size() -1; ++i)
@@ -492,12 +506,10 @@ int main(){
       )
     );
   
-    using libcloudphxx::common::earth::rho_stp;
-    rho_stp_f = (rho_stp<real_t>() / si::kilograms * si::cubic_metres);
   
-    std::vector<real_t> pth(n_cell, 300);
+    std::vector<real_t> pth(n_cell, theta_val); // 300
     std::vector<real_t> prhod(n_cell, rho_stp_f);
-    std::vector<real_t> prv(n_cell, .01);
+    std::vector<real_t> prv(n_cell, rv_val); // .01
     std::vector<real_t> pdiss_rate(n_cell, DISS_RATE * 1e-4); // 1e-4 to turn cm^2/s^3 to m^2/s^3
 
     std::vector<real_t> pCx(n_courant);
@@ -633,8 +645,11 @@ int main(){
         mean_sd_conc += arr[j]; 
       }
       mean_sd_conc /= real_t(n_cell);
+
+      // terminal velocity of the largest droplet
+      real_t vt_max = libcloudphxx::common::vterm::vt_beard76(rep_max_rw * si::meters, temperature, pressure, *(rhod.data) * si::kilograms / si::cubic_meters, visc) * si::seconds / si::meters;
   
-      printf("\rrep no: %3d progress: %3d%%: rw_max %lf mean_sd_conc %lf max_courant %lf t10_tot %lf", rep, int(real_t(i) / sim_time * 100), rep_max_rw, mean_sd_conc, Cmax, t10_tot[rep]);
+      printf("\rrep no: %3d progress: %3d%%: rw_max %lf [um] mean_sd_conc %lf max_sedi_courant %lf max_courant %lf t10_tot %lf", rep, int(real_t(i) / sim_time * 100), rep_max_rw * 1e6, mean_sd_conc, vt_max * opts_init.dt / opts_init.dx, Cmax, t10_tot[rep]);
       std::cout << std::flush;
   
       // get t10 (time to conver 10% of cloud water into rain water)
