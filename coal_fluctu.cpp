@@ -273,10 +273,10 @@ void diag(particles_proto_t<real_t> *prtcls, std::array<real_t, HIST_BINS> &res_
     sum += out[c];
   std::cout << "3rd wet mom mean: " << sum / n_cell << std::endl;
 
-  real_t r_max_poss = pow(real_t(sum/n_cell * rho_stp_f * cell_vol), real_t(1./3.));
+  real_t r_max_poss = pow(real_t(sum * rho_stp_f * cell_vol), real_t(1./3.));
   real_t vt_max_poss = libcloudphxx::common::vterm::vt_beard76(r_max_poss * si::meters, temperature, pressure, rho_stp_f * si::kilograms / si::cubic_meters, visc) * si::seconds / si::meters;
 
-  std::cout << "max possible rad (based on mean 3rd wet mom): " << r_max_poss << std::endl;
+  std::cout << "max possible rad (based on mean 3rd wet mom): " << r_max_poss * 1e6 << " [um]" << std::endl;
   std::cout << "max possible sedimentation courant (based on mean 3rd wet mom): " << vt_max_poss * DT / dx << std::endl;
 
   // get spectrum
