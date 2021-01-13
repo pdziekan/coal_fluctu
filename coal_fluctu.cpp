@@ -35,13 +35,14 @@
 #define SEDI 1
 #define RCYC 0
 #define N_REP 1e1
-#define SIMTIME 50000 // number of steps 
+#define SIMTIME 5000 // [s]
 #define NP 1e3 // init number of droplets per cell
 #define DT 0.1 // [s]
 #define DISS_RATE 1 // [cm^2 / s^3]
 #define LKOL 1e-3 // Kolmogorov length scale[m]. Smallest synthetic eddies are od this size 
 #define NModes 20 // number of synthethic turbulence modes.
 #define NWaves 50 // (max)number of wave vectors for each synthethic turbulence mode.
+#define MaxCourant 1 // dt will be adjusted to keep courants less than this
 
 
 
@@ -84,14 +85,12 @@ const quantity<si::dimensionless, real_t>
 //globals
 std::array<real_t, HIST_BINS> rad_bins;
 const int n_rep = N_REP; // number of repetitions of simulation
-const int sim_time=SIMTIME; //2500;//500;//2500; // 2500 steps
 const int nx = NXNYNZ; // total number of collision cells
 const int ny = NXNYNZ;
 const int nz = NXNYNZ;
 constexpr int n_cell = NXNYNZ * NXNYNZ * NXNYNZ;
 constexpr int n_courant = (NXNYNZ+1) * NXNYNZ * NXNYNZ;
 
-constexpr real_t dt = DT;
 constexpr real_t Np = NP; // number of droplets per simulation (collision cell)
 constexpr real_t Np_in_avg_r_max_cell = Np; // number of droplets per large cells in which we look for r_max
 //#ifdef Onishi
@@ -277,7 +276,7 @@ void diag(particles_proto_t<real_t> *prtcls, std::array<real_t, HIST_BINS> &res_
   real_t vt_max_poss = libcloudphxx::common::vterm::vt_beard76(r_max_poss * si::meters, temperature, pressure, rho_stp_f * si::kilograms / si::cubic_meters, visc) * si::seconds / si::meters;
 
   std::cout << "max possible rad (based on mean 3rd wet mom): " << r_max_poss * 1e6 << " [um]" << std::endl;
-  std::cout << "max possible sedimentation courant (based on mean 3rd wet mom): " << vt_max_poss * DT / dx << std::endl;
+  std::cout << "max possible sedimentation velocity [cm/s] (based on mean 3rd wet mom): " << vt_max_poss*1e2 << std::endl;
 
   // get spectrum
   for (int i=0; i <rad_bins.size() -1; ++i)
@@ -341,6 +340,7 @@ int main(){
   std::ofstream of_size_spectr("size_spectr.dat");
   std::ofstream of_series("series.dat");
   std::ofstream of_tau("tau.dat");
+  std::ofstream of_time("time.dat");
   std::ofstream of_setup("setup.dat");
   std::ofstream of_t10_tot("t10_tot.dat");
 
@@ -366,8 +366,8 @@ int main(){
   of_setup << "n_rep = " << n_rep 
 //            << " n_large_cells = " << n_large_cells
             << " n_cell = " << n_cell
-            << " sim_time = " << sim_time
-            << " dt = " << dt
+            << " SIMTIME = " << SIMTIME
+            << " DT = " << DT
             << " sstp_coal = " << sstp_coal
             << " const_multi = " << sd_const_multi
             << " sd_conc = " << sd_conc
@@ -399,10 +399,11 @@ int main(){
 //  std::vector<real_t> t10(n_cell * n_rep, 0);
   std::vector<real_t> t10_tot(n_rep, 0);
 //  std::vector<real_t> t_max_40(n_cell * n_rep, 0);// = new real_t[n_cell * n_rep];
-  std::vector<std::vector<real_t>> tau           (sim_time+1, std::vector<real_t>(n_rep)); // ratio of rain mass to LWC
-//  std::vector<std::vector<real_t>> nrain         (sim_time+1, std::vector<real_t>(n_cell*n_rep)); // number of rain drops
-//  std::vector<std::vector<real_t>> max_rw        (sim_time+1, std::vector<real_t>(n_rep * n_large_cells)); // max rw per large (averaging) cell
-//  std::vector<std::vector<real_t>> max_rw_small  (sim_time+1, std::vector<real_t>(n_rep * n_cell)); // max rw^3 per small cells (to compare with Alfonso)
+//  std::vector<std::vector<real_t>> time          (n_rep); // time needs to be stored due to adjustable dt
+//  std::vector<std::vector<real_t>> tau           (n_rep); // ratio of rain mass to LWC
+//  std::vector<std::vector<real_t>> nrain         (SIMTIME+1, std::vector<real_t>(n_cell*n_rep)); // number of rain drops
+//  std::vector<std::vector<real_t>> max_rw        (SIMTIME+1, std::vector<real_t>(n_rep * n_large_cells)); // max rw per large (averaging) cell
+//  std::vector<std::vector<real_t>> max_rw_small  (SIMTIME+1, std::vector<real_t>(n_rep * n_cell)); // max rw^3 per small cells (to compare with Alfonso)
 
   std::vector<std::array<real_t, HIST_BINS>> res_bins_pre(n_rep);
   std::vector<std::array<real_t, HIST_BINS>> res_stddev_bins_pre(n_rep);
@@ -421,7 +422,7 @@ int main(){
   {
     opts_init_t<real_t> opts_init;
   
-    opts_init.dt=dt;
+    opts_init.dt=DT;
     opts_init.sstp_coal = sstp_coal; 
     opts_init.sstp_cond = 1; 
 //    opts_init.kernel = kernel_t::hall_pinsky_1000mb_grav;
@@ -523,7 +524,7 @@ int main(){
 
 
     // Init Courants
-    calc_courants(synth_turb, pCx, pCy, pCz, strides_Cx, strides_Cy, strides_Cz, dx, dt);
+    calc_courants(synth_turb, pCx, pCy, pCz, strides_Cx, strides_Cy, strides_Cz, dx, real_t(DT));
 
     arrinfo_t<real_t> th(pth.data(), strides);
     arrinfo_t<real_t> rhod(prhod.data(), strides);
@@ -595,22 +596,43 @@ int main(){
 //    }
 
     std::future<real_t> ftr;
+    // max courant
     real_t Cmax = 0;
+    // terminal velocity of the largest droplet
+    real_t Cmax_vt = 0;
   
-    for(int i=1; i<=sim_time; ++i)
+    // output init state
+    of_time << "0 " << std::endl;
+    of_tau << "0 " << std::endl;
+    real_t time = 0;
+    opts.dt = DT;
+    
+    // simulation loop
+    while(time <= SIMTIME)
     {
-      if(i>1) Cmax = ftr.get();
+      if(time>0) // adjust dt
+      {
+        Cmax = ftr.get();
+        // Courant number ofr the terminal velocity of the largest droplet
+        Cmax_vt = (libcloudphxx::common::vterm::vt_beard76(rep_max_rw * si::meters, temperature, pressure, *(rhod.data) * si::kilograms / si::cubic_meters, visc) * si::seconds / si::meters) * opts.dt / opts_init.dx;
+
+        const real_t max_Cmax = Cmax + Cmax_vt;// std::max(Cmax, Cmax_vt);
+        if(max_Cmax > MaxCourant)
+          opts.dt *= MaxCourant / max_Cmax;
+      }
 
       prtcls->step_sync(opts,th,rv,arrinfo_t<real_t>(),Cx, Cy, Cz);
 
       ftr = std::async(std::launch::async, [&]() -> real_t {
-        synth_turb.update_time(i*DT);
-        return calc_courants(synth_turb, pCx, pCy, pCz, strides_Cx, strides_Cy, strides_Cz, dx, dt);
+        synth_turb.update_time(time+opts.dt); // start calculating courants for the next step
+        return calc_courants(synth_turb, pCx, pCy, pCz, strides_Cx, strides_Cy, strides_Cz, dx, opts.dt);
       });
 
       prtcls->step_async(opts);
 
+      time += opts.dt;
 
+      // --- diagnostics ---
 
       // get max rw
       prtcls->diag_max_rw();
@@ -645,11 +667,8 @@ int main(){
         mean_sd_conc += arr[j]; 
       }
       mean_sd_conc /= real_t(n_cell);
-
-      // terminal velocity of the largest droplet
-      real_t vt_max = libcloudphxx::common::vterm::vt_beard76(rep_max_rw * si::meters, temperature, pressure, *(rhod.data) * si::kilograms / si::cubic_meters, visc) * si::seconds / si::meters;
   
-      printf("\rrep no: %3d progress: %3d%%: rw_max %lf [um] mean_sd_conc %lf max_sedi_courant %lf max_courant %lf t10_tot %lf", rep, int(real_t(i) / sim_time * 100), rep_max_rw * 1e6, mean_sd_conc, vt_max * opts_init.dt / opts_init.dx, Cmax, t10_tot[rep]);
+      printf("\rrep no: %3d progress: %3d%%: dt: %lf rw_max %lf [um] mean_sd_conc %lf max_sedi_courant %lf max_courant %lf t10_tot %lf", rep, int(time / SIMTIME * 100), opts.dt, rep_max_rw * 1e6, mean_sd_conc, Cmax_vt, Cmax, t10_tot[rep]);
       std::cout << std::flush;
   
       // get t10 (time to conver 10% of cloud water into rain water)
@@ -664,8 +683,9 @@ int main(){
 //        tau[i][j + rep * n_cell] = arr[j];// / init_cloud_mass[j];
         rain_mass_tot += arr[j];
       }
-      tau[i][rep] = rain_mass_tot / init_tot_cloud_mass;
-      of_tau << tau[i][rep] << " ";
+//      tau[rep].push_back(rain_mass_tot / init_tot_cloud_mass);
+      of_tau << rain_mass_tot / init_tot_cloud_mass << " ";
+      of_time << time << " ";
 
 //      prtcls->diag_wet_mom(0);
 //      arr = prtcls->outbuf();
@@ -682,11 +702,12 @@ int main(){
       if(t10_tot[rep] == 0. && rain_mass_tot >= init_tot_cloud_mass * .1)
       {
 //std::cerr << "i: " << i << "rain_mass_tot: " << rain_mass_tot << " init_tot_cloud_mass: " << init_tot_cloud_mass << std::endl;
-        t10_tot[rep] =  i * opts_init.dt;
+        t10_tot[rep] = time;
         of_t10_tot << t10_tot[rep] << std::endl;
       }
     }
     of_tau << std::endl;
+    of_time << std::endl;
   
     std::cout << std::endl << "po symulacji, max_rw: " << rep_max_rw << std::endl;
   
@@ -702,7 +723,7 @@ int main(){
 //    int max_growth_idx;
 //    for(int j=0; j < n_cell * n_rep; ++j)
 //    {
-//      real_t max_rw_local_growth = max_rw_small[sim_time][j] - max_rw_small[0][j];
+//      real_t max_rw_local_growth = max_rw_small[SIMTIME][j] - max_rw_small[0][j];
 //      if(max_rw_local_growth > max_growth)
 //      {
 //        max_growth = max_rw_local_growth;
@@ -710,9 +731,10 @@ int main(){
 //      }
 //    }
 
+/*
   real_t mean_max_rad_small = 0.;
   // calc and print max rw (and mass) stats
-  for(int i=0; i<=sim_time; ++i)
+  for(int i=0; i<=SIMTIME; ++i)
   {
     real_t glob_max_rad = 0.;
     real_t mean_max_rad = 0.;
@@ -780,8 +802,9 @@ int main(){
 //    // 15 - std_dev tau 16 - mean_nrain
 //    of_max_drop_vol << i * dt << " " << mean_max_vol_small << " " << std_dev_max_vol_small << " " << mean_max_rad << " " << std_dev_max_rad << " " << glob_max_rad << " " << max_rw_small[i][max_growth_idx] << " " << mean_max_rad_small << " " << std_dev_max_rad_small << " " << skew_max_rad_small << " " << kurt_max_rad_small << " " << skew_max_rad_large << " " << kurt_max_rad_large << " " << mean_tau << " " << std_dev_tau << " " << mean_nrain << std::endl; 
 //
-    of_series << i * dt << " "  << mean_tau << " " << std_dev_tau << " " <<  std::endl; 
+    of_series << i * DT << " "  << mean_tau << " " << std_dev_tau << " " <<  std::endl; 
   }
+*/
 
 //
 //  // cailc how much the radius of the lucky fraction of small cells increased!!
@@ -808,8 +831,8 @@ int main(){
 //  {
 //    real_t ensf = nx * n_rep / 1e1;
 //    int ens = int(ensf);
-//    std::sort(std::begin(max_rw_small[sim_time]), std::end(max_rw_small[sim_time]), std::greater<real_t>());
-//    real_t lucky_mean_rw = std::accumulate(std::begin(max_rw_small[sim_time]), std::begin(max_rw_small[sim_time]) + ens, 0.) / real_t(ens);
+//    std::sort(std::begin(max_rw_small[SIMTIME]), std::end(max_rw_small[SIMTIME]), std::greater<real_t>());
+//    real_t lucky_mean_rw = std::accumulate(std::begin(max_rw_small[SIMTIME]), std::begin(max_rw_small[SIMTIME]) + ens, 0.) / real_t(ens);
 //    cout << "ratoi of lucky 1e-1 fraction final radius to mean final radius: " << lucky_mean_rw / mean_max_rad_small << endl; 
 //
 //    // cailc how quickkly the lucky fraction of small cells reached r_max=40um
@@ -827,7 +850,7 @@ int main(){
 //  {
 //    real_t ensf = nx * n_rep / 1e2;
 //    int ens = int(ensf);
-//    real_t lucky_mean_rw = std::accumulate(std::begin(max_rw_small[sim_time]), std::begin(max_rw_small[sim_time]) + ens, 0.) / real_t(ens);
+//    real_t lucky_mean_rw = std::accumulate(std::begin(max_rw_small[SIMTIME]), std::begin(max_rw_small[SIMTIME]) + ens, 0.) / real_t(ens);
 //    cout << "ratoi of lucky 1e-2 fraction final radius to mean final radius: " << lucky_mean_rw / mean_max_rad_small << endl; 
 //
 //    // cailc how quickkly the lucky fraction of small cells reached r_max=40um
@@ -845,7 +868,7 @@ int main(){
 //    // cailc how much the radius of the lucky fraction of small cells increased!!
 //    real_t ensf = nx * n_rep / 1e3;
 //    int ens = int(ensf);
-//    real_t lucky_mean_rw = std::accumulate(std::begin(max_rw_small[sim_time]), std::begin(max_rw_small[sim_time]) + ens, 0.) / real_t(ens);
+//    real_t lucky_mean_rw = std::accumulate(std::begin(max_rw_small[SIMTIME]), std::begin(max_rw_small[SIMTIME]) + ens, 0.) / real_t(ens);
 //    cout << "ratoi of lucky 1e-3 fraction final radius to mean final radius: " << lucky_mean_rw / mean_max_rad_small << endl; 
 //
 //    // cailc how quickkly the lucky fraction of small cells reached r_max=40um
@@ -863,7 +886,7 @@ int main(){
 //    // cailc how much the radius of the lucky fraction of small cells increased!!
 //    real_t ensf = nx * n_rep / 1e4;
 //    int ens = int(ensf);
-//    real_t lucky_mean_rw = std::accumulate(std::begin(max_rw_small[sim_time]), std::begin(max_rw_small[sim_time]) + ens, 0.) / real_t(ens);
+//    real_t lucky_mean_rw = std::accumulate(std::begin(max_rw_small[SIMTIME]), std::begin(max_rw_small[SIMTIME]) + ens, 0.) / real_t(ens);
 //    cout << "ratoi of lucky 1e-4 fraction final radius to mean final radius: " << lucky_mean_rw / mean_max_rad_small << endl; 
 //
 //    // cailc how quickkly the lucky fraction of small cells reached r_max=40um
