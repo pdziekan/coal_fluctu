@@ -343,6 +343,7 @@ int main(){
   std::ofstream of_size_spectr("size_spectr.dat");
   std::ofstream of_series("series.dat");
   std::ofstream of_tau("tau.dat");
+  std::ofstream of_rmax("rmax.dat");
   std::ofstream of_nrain("nrain.dat");
   std::ofstream of_time("time.dat");
   std::ofstream of_setup("setup.dat");
@@ -385,6 +386,9 @@ int main(){
             << " NWaves = " << NWaves
             << " Lmin = " << Lmin
             << " Lmax = " << Lmax
+            << " MaxCourant = " << MaxCourant
+            << " OUTFREQ = " << OUTFREQ
+            << " REMOVE_R = " << REMOVE_R
 #ifdef HallDavis
             << " kernel: Hall & Davis"
 #else
@@ -610,6 +614,10 @@ int main(){
     of_time << "0 ";
     of_tau << "0 ";
     of_nrain << "0 ";
+    prtcls->diag_max_rw();
+    arr = prtcls->outbuf();
+    of_rmax << *(std::max_element(arr, arr+n_cell)) << " ";
+
     real_t time = 0;
     opts.dt = DT;
     
@@ -680,6 +688,8 @@ int main(){
     
         printf("\rrep no: %3d progress: %3d%%: dt: %lf sstp_coal: %3d rw_max %lf [um] mean_sd_conc %lf max_sedi_courant %lf max_courant %lf t10_tot %lf", rep, int(time / SIMTIME * 100), opts.dt, prtcls->diag_sstp_coal(), rep_max_rw * 1e6, mean_sd_conc, Cmax_vt, Cmax, t10_tot[rep]);
         std::cout << std::flush;
+
+        of_rmax << rep_max_rw << " ";
     
         // get t10 (time to conver 10% of cloud water into rain water)
         prtcls->diag_wet_rng(40e-6, 1); // rain water (like in Onishi)
@@ -719,13 +729,17 @@ int main(){
           of_t10_tot << t10_tot[rep] << std::endl;
         }
         outtime += outinterval;
+
+        of_rmax << std::flush;
+        of_tau << std::flush;
+        of_nrain << std::flush;
+        of_time << std::flush;
       }
     }
+    of_rmax << std::endl;
     of_tau << std::endl;
     of_nrain << std::endl;
     of_time << std::endl;
-  
-    std::cout << std::endl << "po symulacji, max_rw: " << rep_max_rw << std::endl;
   
     diag(prtcls.get(), res_bins_post[rep], res_stddev_bins_post[rep]);
     std::cout << std::endl;
