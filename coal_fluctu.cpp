@@ -44,6 +44,7 @@
 #define NWaves 50 // (max)number of wave vectors for each synthethic turbulence mode.
 #define MaxCourant 1 // dt will be adjusted to keep courants less than this
 #define OUTFREQ 1000 // output done every SIMTIME / OUTFREQ seconds
+#define REMOVE_R 250 // [um] droplets larger than this will be removed 
 
 
 
@@ -634,6 +635,8 @@ int main(){
       });
 
       prtcls->step_async(opts);
+
+      prtcls->remove_wet_rng(REMOVE_R*1e-6, 1);
 
       time += opts.dt;
 
