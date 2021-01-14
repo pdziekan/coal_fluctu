@@ -43,6 +43,7 @@
 #define NModes 20 // number of synthethic turbulence modes.
 #define NWaves 50 // (max)number of wave vectors for each synthethic turbulence mode.
 #define MaxCourant 1 // dt will be adjusted to keep courants less than this
+#define OUTFREQ 1000 // output done every SIMTIME / OUTFREQ seconds
 
 
 
@@ -119,6 +120,7 @@ const auto temperature = libcloudphxx::common::theta_dry::T<real_t>(theta_val * 
 const auto pressure = libcloudphxx::common::theta_dry::p<real_t>(rho_stp_f * si::kilograms / si::cubic_meters, rv_val, temperature);
 const auto visc = libcloudphxx::common::vterm::visc(temperature);
 
+const real_t outinterval = SIMTIME / OUTFREQ;
 
 
 
@@ -340,6 +342,7 @@ int main(){
   std::ofstream of_size_spectr("size_spectr.dat");
   std::ofstream of_series("series.dat");
   std::ofstream of_tau("tau.dat");
+  std::ofstream of_nrain("nrain.dat");
   std::ofstream of_time("time.dat");
   std::ofstream of_setup("setup.dat");
   std::ofstream of_t10_tot("t10_tot.dat");
@@ -600,10 +603,12 @@ int main(){
     real_t Cmax = 0;
     // terminal velocity of the largest droplet
     real_t Cmax_vt = 0;
+    real_t outtime = outinterval;
   
     // output init state
     of_time << "0 " << std::endl;
     of_tau << "0 " << std::endl;
+    of_nrain << "0 " << std::endl;
     real_t time = 0;
     opts.dt = DT;
     
@@ -657,56 +662,64 @@ int main(){
 //          t_max_40[j + rep * n_cell] = i * opts_init.dt; 
       }
 
-      // get mean_sd_conc
-      prtcls->diag_all();
-      prtcls->diag_sd_conc();
-      arr = prtcls->outbuf();
-      real_t mean_sd_conc = 0;
-      for(int j=0; j<n_cell; ++j)
+      if(time > outtime)
       {
-        mean_sd_conc += arr[j]; 
-      }
-      mean_sd_conc /= real_t(n_cell);
+        // get mean_sd_conc
+        prtcls->diag_all();
+        prtcls->diag_sd_conc();
+        arr = prtcls->outbuf();
+        real_t mean_sd_conc = 0;
+        for(int j=0; j<n_cell; ++j)
+        {
+          mean_sd_conc += arr[j]; 
+        }
+        mean_sd_conc /= real_t(n_cell);
+    
+        printf("\rrep no: %3d progress: %3d%%: dt: %lf sstp_coal: %3d rw_max %lf [um] mean_sd_conc %lf max_sedi_courant %lf max_courant %lf t10_tot %lf", rep, int(time / SIMTIME * 100), opts.dt, prtcls->diag_sstp_coal(), rep_max_rw * 1e6, mean_sd_conc, Cmax_vt, Cmax, t10_tot[rep]);
+        std::cout << std::flush;
+    
+        // get t10 (time to conver 10% of cloud water into rain water)
+        prtcls->diag_wet_rng(40e-6, 1); // rain water (like in Onishi)
+        prtcls->diag_wet_mom(3);
+        arr = prtcls->outbuf();
+        real_t rain_mass_tot = 0;
+        for(int j=0; j<n_cell; ++j)
+        {
+  //        if(t10[j + rep * n_cell] == 0. && arr[j] >= init_cloud_mass[j] * .1)
+  //          t10[j + rep * n_cell] = i * opts_init.dt;
+  //        tau[i][j + rep * n_cell] = arr[j];// / init_cloud_mass[j];
+          rain_mass_tot += arr[j];
+        }
+  //      tau[rep].push_back(rain_mass_tot / init_tot_cloud_mass);
+        of_tau << rain_mass_tot / init_tot_cloud_mass << " ";
+        of_time << time << " ";
   
-      printf("\rrep no: %3d progress: %3d%%: dt: %lf rw_max %lf [um] mean_sd_conc %lf max_sedi_courant %lf max_courant %lf t10_tot %lf", rep, int(time / SIMTIME * 100), opts.dt, rep_max_rw * 1e6, mean_sd_conc, Cmax_vt, Cmax, t10_tot[rep]);
-      std::cout << std::flush;
-  
-      // get t10 (time to conver 10% of cloud water into rain water)
-      prtcls->diag_wet_rng(40e-6, 1); // rain water (like in Onishi)
-      prtcls->diag_wet_mom(3);
-      arr = prtcls->outbuf();
-      real_t rain_mass_tot = 0;
-      for(int j=0; j<n_cell; ++j)
-      {
-//        if(t10[j + rep * n_cell] == 0. && arr[j] >= init_cloud_mass[j] * .1)
-//          t10[j + rep * n_cell] = i * opts_init.dt;
-//        tau[i][j + rep * n_cell] = arr[j];// / init_cloud_mass[j];
-        rain_mass_tot += arr[j];
-      }
-//      tau[rep].push_back(rain_mass_tot / init_tot_cloud_mass);
-      of_tau << rain_mass_tot / init_tot_cloud_mass << " ";
-      of_time << time << " ";
-
-//      prtcls->diag_wet_mom(0);
-//      arr = prtcls->outbuf();
-//      for(int j=0; j<n_cell; ++j)
-//      {
-//        nrain[i][j + rep * n_cell] = arr[j];
-//      }
-//
-//      prtcls->diag_wet_rng(0, 1); 
-//      prtcls->diag_wet_mom(3);
-//      arr = prtcls->outbuf();
-//      for(int j=0; j<n_cell; ++j)
-//        if(arr[j] > 0) tau[i][j + rep * n_cell] /= arr[j]; // to avoid (small) variability in LWC?
-      if(t10_tot[rep] == 0. && rain_mass_tot >= init_tot_cloud_mass * .1)
-      {
-//std::cerr << "i: " << i << "rain_mass_tot: " << rain_mass_tot << " init_tot_cloud_mass: " << init_tot_cloud_mass << std::endl;
-        t10_tot[rep] = time;
-        of_t10_tot << t10_tot[rep] << std::endl;
+        prtcls->diag_wet_mom(0);
+        arr = prtcls->outbuf();
+        real_t nrain_mean = 0; // concentration of rain droplets, averaged over all cells (whole domain)
+        for(int j=0; j<n_cell; ++j)
+        {
+          nrain_mean += arr[j];
+        }
+        nrain_mean = nrain_mean * rho_stp_f / n_cell; // [1/m^3]
+        of_nrain << nrain_mean << " ";
+  //
+  //      prtcls->diag_wet_rng(0, 1); 
+  //      prtcls->diag_wet_mom(3);
+  //      arr = prtcls->outbuf();
+  //      for(int j=0; j<n_cell; ++j)
+  //        if(arr[j] > 0) tau[i][j + rep * n_cell] /= arr[j]; // to avoid (small) variability in LWC?
+        if(t10_tot[rep] == 0. && rain_mass_tot >= init_tot_cloud_mass * .1)
+        {
+  //std::cerr << "i: " << i << "rain_mass_tot: " << rain_mass_tot << " init_tot_cloud_mass: " << init_tot_cloud_mass << std::endl;
+          t10_tot[rep] = time;
+          of_t10_tot << t10_tot[rep] << std::endl;
+        }
+        outtime += outinterval;
       }
     }
     of_tau << std::endl;
+    of_nrain << std::endl;
     of_time << std::endl;
   
     std::cout << std::endl << "po symulacji, max_rw: " << rep_max_rw << std::endl;
