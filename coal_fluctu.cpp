@@ -606,9 +606,9 @@ int main(){
     real_t outtime = outinterval;
   
     // output init state
-    of_time << "0 " << std::endl;
-    of_tau << "0 " << std::endl;
-    of_nrain << "0 " << std::endl;
+    of_time << "0 ";
+    of_tau << "0 ";
+    of_nrain << "0 ";
     real_t time = 0;
     opts.dt = DT;
     
