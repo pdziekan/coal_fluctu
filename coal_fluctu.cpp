@@ -673,6 +673,32 @@ int main(){
 //          t_max_40[j + rep * n_cell] = i * opts_init.dt; 
       }
 
+    
+      // get t10 (time to conver 10% of cloud water into rain water)
+      prtcls->diag_wet_rng(40e-6, 1); // rain water (like in Onishi)
+      prtcls->diag_wet_mom(3);
+      arr = prtcls->outbuf();
+      real_t rain_mass_tot = 0;
+      for(int j=0; j<n_cell; ++j)
+        rain_mass_tot += arr[j];
+
+      prtcls->diag_wet_rng(0, 40e-6); // cloud water (like in Onishi)
+      prtcls->diag_wet_mom(3);
+      arr = prtcls->outbuf();
+      real_t cloud_mass_tot = 0;
+      for(int j=0; j<n_cell; ++j)
+        cloud_mass_tot += arr[j];
+
+      // add removed particles (due to large r) to rain water mass
+      rain_mass_tot += init_tot_cloud_mass - (cloud_mass_tot + rain_mass_tot);
+
+      if(t10_tot[rep] == 0. && rain_mass_tot >= init_tot_cloud_mass * .1)
+      {
+        t10_tot[rep] = time;
+        of_t10_tot << t10_tot[rep] << std::endl;
+      }
+      outtime += outinterval;
+
       if(time > outtime)
       {
         // get mean_sd_conc
@@ -690,23 +716,10 @@ int main(){
         std::cout << std::flush;
 
         of_rmax << rep_max_rw << " ";
-    
-        // get t10 (time to conver 10% of cloud water into rain water)
-        prtcls->diag_wet_rng(40e-6, 1); // rain water (like in Onishi)
-        prtcls->diag_wet_mom(3);
-        arr = prtcls->outbuf();
-        real_t rain_mass_tot = 0;
-        for(int j=0; j<n_cell; ++j)
-        {
-  //        if(t10[j + rep * n_cell] == 0. && arr[j] >= init_cloud_mass[j] * .1)
-  //          t10[j + rep * n_cell] = i * opts_init.dt;
-  //        tau[i][j + rep * n_cell] = arr[j];// / init_cloud_mass[j];
-          rain_mass_tot += arr[j];
-        }
-  //      tau[rep].push_back(rain_mass_tot / init_tot_cloud_mass);
         of_tau << rain_mass_tot / init_tot_cloud_mass << " ";
         of_time << time << " ";
   
+        prtcls->diag_wet_rng(40e-6, 1); // rain water (like in Onishi)
         prtcls->diag_wet_mom(0);
         arr = prtcls->outbuf();
         real_t nrain_mean = 0; // concentration of rain droplets, averaged over all cells (whole domain)
@@ -716,19 +729,6 @@ int main(){
         }
         nrain_mean = nrain_mean * rho_stp_f / n_cell; // [1/m^3]
         of_nrain << nrain_mean << " ";
-  //
-  //      prtcls->diag_wet_rng(0, 1); 
-  //      prtcls->diag_wet_mom(3);
-  //      arr = prtcls->outbuf();
-  //      for(int j=0; j<n_cell; ++j)
-  //        if(arr[j] > 0) tau[i][j + rep * n_cell] /= arr[j]; // to avoid (small) variability in LWC?
-        if(t10_tot[rep] == 0. && rain_mass_tot >= init_tot_cloud_mass * .1)
-        {
-  //std::cerr << "i: " << i << "rain_mass_tot: " << rain_mass_tot << " init_tot_cloud_mass: " << init_tot_cloud_mass << std::endl;
-          t10_tot[rep] = time;
-          of_t10_tot << t10_tot[rep] << std::endl;
-        }
-        outtime += outinterval;
 
         of_rmax << std::flush;
         of_tau << std::flush;
