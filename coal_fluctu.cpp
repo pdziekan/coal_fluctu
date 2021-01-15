@@ -327,6 +327,7 @@ void diag(particles_proto_t<real_t> *prtcls, std::array<real_t, HIST_BINS> &res_
 
 
 int main(int argc, char *argv[]){
+  if(argc != 2) throw std::runtime_error("Please specify output prefix");
 //  std::cerr << "main start" << std::endl;
 
   // sanity check
