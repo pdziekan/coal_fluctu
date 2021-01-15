@@ -46,8 +46,6 @@
 #define OUTFREQ 1000 // output done every SIMTIME / OUTFREQ seconds
 #define REMOVE_R 250 // [um] droplets larger than this will be removed 
 
-
-
 #if defined Onishi && defined Wang
   #error Both Wang and Onishi defined
 #endif
@@ -328,7 +326,7 @@ void diag(particles_proto_t<real_t> *prtcls, std::array<real_t, HIST_BINS> &res_
 
 
 
-int main(){
+int main(int argc, char *argv[]){
 //  std::cerr << "main start" << std::endl;
 
   // sanity check
@@ -339,15 +337,16 @@ int main(){
 //    throw std::runtime_error("n_cell nie jest wilokrotnoscia n_cells_per_avg_r_max_cell");
 //#endif
 
+  std::string outprefix(argv[1]);
 
-  std::ofstream of_size_spectr("size_spectr.dat");
-  std::ofstream of_series("series.dat");
-  std::ofstream of_tau("tau.dat");
-  std::ofstream of_rmax("rmax.dat");
-  std::ofstream of_nrain("nrain.dat");
-  std::ofstream of_time("time.dat");
-  std::ofstream of_setup("setup.dat");
-  std::ofstream of_t10_tot("t10_tot.dat");
+  std::ofstream of_size_spectr(outprefix+"size_spectr.dat");
+  std::ofstream of_series(outprefix+"series.dat");
+  std::ofstream of_tau(outprefix+"tau.dat");
+  std::ofstream of_rmax(outprefix+"rmax.dat");
+  std::ofstream of_nrain(outprefix+"nrain.dat");
+  std::ofstream of_time(outprefix+"time.dat");
+  std::ofstream of_setup(outprefix+"setup.dat");
+  std::ofstream of_t10_tot(outprefix+"t10_tot.dat");
 
 #ifdef cutoff
   of_setup << "init distr cutoff at " << cutoff << " microns!" << std::endl;
