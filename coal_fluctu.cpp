@@ -23,28 +23,28 @@
 
 
 
-//#define Onishi
-#define Wang
-#define cutoff 20e-6 //40e-6
+#define Onishi
+//#define Wang
+#define cutoff 40e-6
 #define HallDavis
 
 #define HIST_BINS 5001
 #define BACKEND CUDA
-#define N_SD_MAX 1e8 //1e8
-#define NXNYNZ 1 //720 // number of cells in each direction
+#define N_SD_MAX 1e8
+#define NXNYNZ 300 //720 // number of cells in each direction
 #define SEDI 1
 #define RCYC 0
-#define N_REP 2e0
-#define SIMTIME 5000 // [s]
-#define NP 1e3 // init number of droplets per cell
+#define N_REP 1e0
+#define SIMTIME 800 // [s]
+#define NP 1e0 // init number of droplets per cell
 #define DT 0.1 // [s]
 #define DISS_RATE 1 // [cm^2 / s^3]
 #define LKOL 1e-3 // Kolmogorov length scale[m]. Smallest synthetic eddies are od this size 
-#define NModes 1 // number of synthethic turbulence modes.
-#define NWaves 50 // (max)number of wave vectors for each synthethic turbulence mode.
+#define NModes 6 // number of synthethic turbulence modes.
+#define NWaves 6 // (max)number of wave vectors for each synthethic turbulence mode.
 #define MaxCourant 1 // dt will be adjusted to keep courants less than this
 #define OUTFREQ 1000 // output done every SIMTIME / OUTFREQ seconds
-#define REMOVE_R 1e10//250 // [um] droplets larger than this will be removed 
+#define REMOVE_R 250 // [um] droplets larger than this will be removed 
 
 #if defined Onishi && defined Wang
   #error Both Wang and Onishi defined
