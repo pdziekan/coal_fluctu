@@ -22,25 +22,19 @@
 #include <chrono>
 
 
-//#define sgs_ST
-#define sgs_GA17
-
-#if defined sgs_ST && defined sgs_GA17
-  #error Both sgs_ST and sgs_GA17 defined
-#endif
-
 #define Onishi
 //#define Wang
+
+#define sgs_ST
+//#define sgs_GA17
+
+//#define variable_dt
+
 #define cutoff 40e-6
-
-#if defined Onishi && defined Wang
-  #error Both Wang and Onishi defined
-#endif
 #define HallDavis
-
 #define HIST_BINS 21
 #define BACKEND CUDA
-#define N_SD_MAX 1e8
+#define N_SD_MAX 27e6
 #define NXNYNZ 300 //300 //720 // number of cells in each direction
 #define SEDI 1
 #define RCYC 0
@@ -56,6 +50,15 @@
 #define OUTFREQ 800 // output done every SIMTIME / OUTFREQ seconds
 #define MAXRINTERVAL 0.1 // maximum r is diagnosed every MAXRINTERVAL seconds
 #define REMOVE_R 250 // [um] droplets larger than this will be removed 
+
+
+#if defined sgs_ST && defined sgs_GA17
+  #error Both sgs_ST and sgs_GA17 defined
+#endif
+
+#if defined Onishi && defined Wang
+  #error Both Wang and Onishi defined
+#endif
 
 using namespace std;
 using namespace libcloudphxx::lgrngn;
@@ -279,6 +282,10 @@ int main(int argc, char *argv[]){
   of_setup << "init distr cutoff at " << cutoff << " microns!" << std::endl;
 #endif
 
+#ifdef variable_dt
+  of_setup << "variable dt run" << std::endl;
+#endif
+
 #ifdef Onishi
   of_setup << "Onishi (expvolume) run!" << std::endl;
 #elif defined Wang
@@ -357,7 +364,9 @@ int main(int argc, char *argv[]){
     opts_init.dt=DT;
     opts_init.sstp_coal = sstp_coal; 
     opts_init.sstp_cond = 1; 
+#ifdef variable_dt
     opts_init.variable_dt_switch = true;
+#endif
 //    opts_init.kernel = kernel_t::hall_pinsky_1000mb_grav;
 #ifdef HallDavis
     opts_init.kernel = kernel_t::hall_davis_no_waals;
@@ -523,7 +532,9 @@ int main(int argc, char *argv[]){
     of_rmax << *(std::max_element(arr, arr+n_cell)) << " ";
 
     real_t time = 0;
+#ifdef variable_dt
     opts.dt = DT;
+#endif
 
     std::cerr << "init cloud_mass_tot: " << init_tot_cloud_mass << std::endl;
     std::cerr << "init rain_mass_tot: " << init_tot_rain_mass << std::endl;
@@ -533,6 +544,7 @@ int main(int argc, char *argv[]){
     {
       tbeg = std::chrono::system_clock::now();
 
+#ifdef variable_dt
       if(time>0) // adjust dt
       {
         auto up_minmax = prtcls->diag_up_minmax();
@@ -559,6 +571,7 @@ int main(int argc, char *argv[]){
         if(max_Cmax > MaxCourant)
           opts.dt *= MaxCourant / max_Cmax;
       }
+#endif
       tend = std::chrono::system_clock::now();
       tadjust += std::chrono::duration_cast<std::chrono::milliseconds>( tend - tbeg );
       tbeg = tend;
