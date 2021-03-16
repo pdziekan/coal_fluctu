@@ -22,9 +22,20 @@
 #include <chrono>
 
 
+//#define sgs_ST
+#define sgs_GA17
+
+#if defined sgs_ST && defined sgs_GA17
+  #error Both sgs_ST and sgs_GA17 defined
+#endif
+
 #define Onishi
 //#define Wang
 #define cutoff 40e-6
+
+#if defined Onishi && defined Wang
+  #error Both Wang and Onishi defined
+#endif
 #define HallDavis
 
 #define HIST_BINS 21
@@ -34,7 +45,7 @@
 #define SEDI 1
 #define RCYC 0
 #define N_REP 1e0
-#define SIMTIME 0.2// 800 // [s]
+#define SIMTIME 800 // [s]
 #define NP 1e0 // init number of droplets per cell
 #define DT 0.1 // [s]
 #define DISS_RATE 1 // [cm^2 / s^3]
@@ -42,13 +53,9 @@
 #define NModes 20 // number of synthethic turbulence modes.
 #define NWaves 50 // (max)number of wave vectors for each synthethic turbulence mode.
 #define MaxCourant 1 // dt will be adjusted to keep courants less than this
-#define OUTFREQ 2 // output done every SIMTIME / OUTFREQ seconds
+#define OUTFREQ 800 // output done every SIMTIME / OUTFREQ seconds
 #define MAXRINTERVAL 0.1 // maximum r is diagnosed every MAXRINTERVAL seconds
 #define REMOVE_R 250 // [um] droplets larger than this will be removed 
-
-#if defined Onishi && defined Wang
-  #error Both Wang and Onishi defined
-#endif
 
 using namespace std;
 using namespace libcloudphxx::lgrngn;
@@ -278,6 +285,12 @@ int main(int argc, char *argv[]){
   of_setup << "Wang (expvolume) run!" << std::endl;
 #endif
 
+#ifdef sgs_ST
+  of_setup << "ST_periodic sgs_adve" << std::endl;
+#elif defined sgs_GA17
+  of_setup << "GA17 sgs_adve" << std::endl;
+#endif
+
 #if defined Onishi || defined Wang
   of_setup << "Np = " << Np << std::endl;
   of_setup << "Np per avg cell = " << Np_in_avg_r_max_cell << std::endl;
@@ -361,12 +374,21 @@ int main(int argc, char *argv[]){
     opts_init.sedi_switch=1;
     opts_init.src_switch=0;
     opts_init.chem_switch=0;
+
+#ifdef sgs_ST
     opts_init.sgs_adve=sgs_adve_t::ST_periodic;
     opts_init.ST_Lmax = Lmax;
     opts_init.ST_Lmin = Lmin;
     opts_init.ST_Nmodes = NModes;
     opts_init.ST_Nwaves_max = NWaves;
     opts_init.ST_eps = DISS_RATE * 1e-4;
+#endif
+
+#ifdef sgs_GA17
+    opts_init.sgs_adve=sgs_adve_t::GA17;
+    opts_init.SGS_mix_len = std::vector<real_t>(nz, Lmax);
+#endif
+
 //    opts_init.adve_scheme = as_t::pred_corr;
 
     opts_init.periodic_topbot_walls = 1;
@@ -421,7 +443,11 @@ int main(int argc, char *argv[]){
     arrinfo_t<real_t> th(pth.data(), strides);
     arrinfo_t<real_t> rhod(prhod.data(), strides);
     arrinfo_t<real_t> rv(prv.data(), strides);
-  //  arrinfo_t<real_t> diss_rate(pdiss_rate.data(), strides);
+
+#ifdef sgs_GA17
+    std::vector<real_t> pdiss_rate(n_cell, DISS_RATE * 1e-4); // 1e-4 to turn cm^2/s^3 to m^2/s^3
+    arrinfo_t<real_t> diss_rate(pdiss_rate.data(), strides);
+#endif
 
     prtcls->init(th,rv,rhod, arrinfo_t<real_t>());
 //    std::cerr << "post init" << std::endl;
@@ -538,7 +564,13 @@ int main(int argc, char *argv[]){
       tbeg = tend;
 
 
+#ifdef sgs_ST
       prtcls->step_sync(opts,arrinfo_t<real_t>{},arrinfo_t<real_t>{});
+#endif
+#ifdef sgs_GA17
+      prtcls->step_sync(opts,arrinfo_t<real_t>{},arrinfo_t<real_t>{},arrinfo_t<real_t>{},arrinfo_t<real_t>{},arrinfo_t<real_t>{},arrinfo_t<real_t>{},diss_rate);
+#endif
+
       tend = std::chrono::system_clock::now();
       tsync += std::chrono::duration_cast<std::chrono::milliseconds>( tend - tbeg );
       tbeg = tend;
@@ -627,14 +659,14 @@ int main(int argc, char *argv[]){
         }
     
         // output
-        printf("\rrep no: %3d progress: %3d%%: dt: %lf sstp_coal: %3d rw_max %lf [um] mean_sd_conc %lf max_sedi_courant %lf max_sgs_courant %lf t10_tot %lf", rep, int(time / SIMTIME * 100), opts.dt, prtcls->diag_sstp_coal(), rep_max_rw * 1e6, mean_sd_conc, Cmax_vt, Cmax_sgs, t10_tot[rep]);
+        printf("rep no: %3d progress: %3d%%: dt: %lf sstp_coal: %3d rw_max %lf [um] mean_sd_conc %lf max_sedi_courant %lf max_sgs_courant %lf t10_tot %lf\n", rep, int(time / SIMTIME * 100), opts.dt, prtcls->diag_sstp_coal(), rep_max_rw * 1e6, mean_sd_conc, Cmax_vt, Cmax_sgs, t10_tot[rep]);
         of_rmax << rep_max_rw << " ";
         of_tau << rain_mass_tot / init_tot_cloud_mass << " ";
         of_time << time << " ";
         of_nrain << nrain_mean << " ";
 
-        std::cerr << "cloud_mass_tot: " << cloud_mass_tot << std::endl;
-        std::cerr << "rain_mass_tot: " << rain_mass_tot << std::endl;
+//        std::cerr << "cloud_mass_tot: " << cloud_mass_tot << std::endl;
+//        std::cerr << "rain_mass_tot: " << rain_mass_tot << std::endl;
 
         std::cout << std::flush;
         of_rmax << std::flush;
