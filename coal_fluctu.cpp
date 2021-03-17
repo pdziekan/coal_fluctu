@@ -25,8 +25,8 @@
 #define Onishi
 //#define Wang
 
-#define sgs_ST
-//#define sgs_GA17
+//#define sgs_ST
+#define sgs_GA17
 
 //#define variable_dt
 
@@ -597,7 +597,11 @@ int main(int argc, char *argv[]){
       tend = std::chrono::system_clock::now();
       trmr += std::chrono::duration_cast<std::chrono::milliseconds>( tend - tbeg );
 
+#ifdef variable_dt
       time += opts.dt;
+#else
+      time += opts_init.dt;
+#endif
 
       // --- diagnostics ---
 
