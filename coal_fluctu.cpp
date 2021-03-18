@@ -172,25 +172,25 @@ return (n1_stp * si::cubic_metres) * 3. * pow(r,3) / pow(mean_rd1 / si::metres, 
   { return new exp_dry_radii( *this ); }
 };  
 
-void diag(particles_proto_t<real_t> *prtcls, std::array<real_t, HIST_BINS> &res_bins, std::array<real_t, HIST_BINS> &res_stddev_bins)
+void diag(particles_proto_t<real_t> *prtcls, std::array<real_t, HIST_BINS> &res_bins, std::array<real_t, HIST_BINS> &res_stddev_bins, std::ofstream &ofs)
 {
   prtcls->diag_all();
   prtcls->diag_sd_conc();
-  std::cout << "sd conc: " << prtcls->outbuf()[0] << std::endl;
+  ofs << "sd conc: " << prtcls->outbuf()[0] << std::endl;
 
 /*
   prtcls->diag_all();
   prtcls->diag_dry_mom(0);
   drop_no = prtcls->outbuf()[0];
-  std::cout << "number of droplets: " << drop_no << std::endl;
+  ofs << "number of droplets: " << drop_no << std::endl;
 
   prtcls->diag_all();
   prtcls->diag_wet_mom(1);
-  std::cout << "mean wet radius: " << prtcls->outbuf()[0] / drop_no << std::endl;
+  ofs << "mean wet radius: " << prtcls->outbuf()[0] / drop_no << std::endl;
 
   prtcls->diag_all();
   prtcls->diag_dry_mom(1);
-  std::cout << "mean dry radius: " << prtcls->outbuf()[0] / drop_no << std::endl;
+  ofs << "mean dry radius: " << prtcls->outbuf()[0] / drop_no << std::endl;
 
 */
   prtcls->diag_all();
@@ -200,13 +200,13 @@ void diag(particles_proto_t<real_t> *prtcls, std::array<real_t, HIST_BINS> &res_
   #pragma omp parallel for reduction(+ : sum)
   for(int c=0; c < n_cell; ++c)
     sum += out[c];
-  std::cout << "3rd wet mom mean: " << sum / n_cell << std::endl;
+  ofs << "3rd wet mom mean: " << sum / n_cell << std::endl;
 
   real_t r_max_poss = pow(real_t(sum * rho_stp_f * cell_vol), real_t(1./3.));
   real_t vt_max_poss = libcloudphxx::common::vterm::vt_beard76(r_max_poss * si::meters, temperature, pressure, rho_stp_f * si::kilograms / si::cubic_meters, visc) * si::seconds / si::meters;
 
-  std::cout << "max possible rad (based on mean 3rd wet mom): " << r_max_poss * 1e6 << " [um]" << std::endl;
-  std::cout << "max possible sedimentation velocity [cm/s] (based on mean 3rd wet mom): " << vt_max_poss*1e2 << std::endl;
+  ofs << "max possible rad (based on mean 3rd wet mom): " << r_max_poss * 1e6 << " [um]" << std::endl;
+  ofs << "max possible sedimentation velocity [cm/s] (based on mean 3rd wet mom): " << vt_max_poss*1e2 << std::endl;
 
   // get spectrum
 //  #pragma omp parallel for
@@ -221,7 +221,7 @@ void diag(particles_proto_t<real_t> *prtcls, std::array<real_t, HIST_BINS> &res_
     auto buf = prtcls->outbuf();
     for(int c=0; c < n_cell; ++c)
     {
-//      std::cout << buf[c] << " ";
+//      ofs << buf[c] << " ";
       mean += buf[c];
     }
     mean /= n_cell;
@@ -251,13 +251,13 @@ void diag(particles_proto_t<real_t> *prtcls, std::array<real_t, HIST_BINS> &res_
                     * 1e3;                             // to get grams
     */
   }
-    std::cout << "res_bins sum (LWC?): " << std::accumulate(res_bins.begin(), res_bins.end(), 0.) << std::endl;
+    ofs << "res_bins sum (LWC?): " << std::accumulate(res_bins.begin(), res_bins.end(), 0.) << std::endl;
 }
 
 
 int main(int argc, char *argv[]){
   if(argc != 2) throw std::runtime_error("Please specify output prefix");
-//  std::cerr << "main start" << std::endl;
+//  of_progress << "main start" << std::endl;
 
   // sanity check
 //#ifdef Onishi
@@ -270,6 +270,9 @@ int main(int argc, char *argv[]){
   std::string outprefix(argv[1]);
 
   std::ofstream of_size_spectr(outprefix+"size_spectr.dat");
+  if (!of_size_spectr.is_open())
+    throw std::runtime_error("Error opening output file, wrong path?");
+  std::ofstream of_progress(outprefix+"progress.dat");
   std::ofstream of_series(outprefix+"series.dat");
   std::ofstream of_tau(outprefix+"tau.dat");
   std::ofstream of_rmax(outprefix+"rmax.dat");
@@ -418,7 +421,7 @@ int main(int argc, char *argv[]){
     opts_init.sd_const_multi = sd_const_multi;
   //  opts_init.n_sd_max = 20e6 * opts_init.x1 * opts_init.y1 * opts_init.z1 + 1;
     opts_init.n_sd_max = N_SD_MAX;// 20e6 * opts_init.x1 * opts_init.y1 * opts_init.z1 + 1;
-//  std::cout << "opts_init.n_sd_max: " << opts_init.n_sd_max << std::endl; 
+//  of_progress << "opts_init.n_sd_max: " << opts_init.n_sd_max << std::endl; 
   
 #if defined Onishi || defined Wang
     opts_init.dry_distros.emplace(
@@ -459,7 +462,7 @@ int main(int argc, char *argv[]){
 #endif
 
     prtcls->init(th,rv,rhod, arrinfo_t<real_t>());
-//    std::cerr << "post init" << std::endl;
+//    of_progress << "post init" << std::endl;
   
     opts_t<real_t> opts;
     opts.adve = 1;
@@ -473,7 +476,7 @@ int main(int argc, char *argv[]){
     std::fill(res_bins_post[rep].begin(), res_bins_post[rep].end(), 0.);
     std::fill(res_stddev_bins_pre[rep].begin(), res_stddev_bins_pre[rep].end(), 0.);
     std::fill(res_stddev_bins_post[rep].begin(), res_stddev_bins_post[rep].end(), 0.);
-    diag(prtcls.get(), res_bins_pre[rep], res_stddev_bins_pre[rep]);
+    diag(prtcls.get(), res_bins_pre[rep], res_stddev_bins_pre[rep],of_progress);
   
   //  prtcls->step_sync(opts,th,rv);//,rhod);
   //  cout << prtcls->step_async(opts) << endl;
@@ -536,8 +539,8 @@ int main(int argc, char *argv[]){
     opts.dt = DT;
 #endif
 
-    std::cerr << "init cloud_mass_tot: " << init_tot_cloud_mass << std::endl;
-    std::cerr << "init rain_mass_tot: " << init_tot_rain_mass << std::endl;
+    of_progress << "init cloud_mass_tot: " << init_tot_cloud_mass << std::endl;
+    of_progress << "init rain_mass_tot: " << init_tot_rain_mass << std::endl;
     
     // simulation loop
     while(time <= SIMTIME)
@@ -682,10 +685,10 @@ int main(int argc, char *argv[]){
         of_time << time << " ";
         of_nrain << nrain_mean << " ";
 
-//        std::cerr << "cloud_mass_tot: " << cloud_mass_tot << std::endl;
-//        std::cerr << "rain_mass_tot: " << rain_mass_tot << std::endl;
+//        of_progress << "cloud_mass_tot: " << cloud_mass_tot << std::endl;
+//        of_progress << "rain_mass_tot: " << rain_mass_tot << std::endl;
 
-        std::cout << std::flush;
+        of_progress << std::flush;
         of_rmax << std::flush;
         of_tau << std::flush;
         of_nrain << std::flush;
@@ -699,15 +702,15 @@ int main(int argc, char *argv[]){
     of_nrain << std::endl;
     of_time << std::endl;
   
-    diag(prtcls.get(), res_bins_post[rep], res_stddev_bins_post[rep]);
-    std::cout << std::endl;
+    diag(prtcls.get(), res_bins_post[rep], res_stddev_bins_post[rep],of_progress);
+    of_progress << std::endl;
 
     auto raw_ptr = prtcls.release();
     delete raw_ptr;
 
   }
 
-  std::cout <<  "wall time in milliseconds: " << std::endl
+  of_progress <<  "wall time in milliseconds: " << std::endl
     << "adjust dt:      " << tadjust.count() << std::endl
     << "sync:           " << tsync.count() << std::endl
     << "async:          " << tasync.count() << std::endl
@@ -723,8 +726,8 @@ int main(int argc, char *argv[]){
   for(int j=0; j<n_rep; ++j)
     std_dev_t10_tot += pow(t10_tot[j] - mean_t10_tot,2);
   std_dev_t10_tot = sqrt(std_dev_t10_tot / (n_rep-1));
-  std::cout << "mean(t10% in the domain) = " << mean_t10_tot << std::endl;
-  std::cout << "std_dev(t10% in the domain) = " << std_dev_t10_tot << std::endl;
+  of_progress << "mean(t10% in the domain) = " << mean_t10_tot << std::endl;
+  of_progress << "std_dev(t10% in the domain) = " << std_dev_t10_tot << std::endl;
 
 // output
   for (int i=0; i <rad_bins.size() -1; ++i)
