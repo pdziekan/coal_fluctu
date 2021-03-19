@@ -34,8 +34,8 @@
 //#define HallDavis
 #define HIST_BINS 21
 #define BACKEND CUDA
-#define N_SD_MAX 27e6
-#define NXNYNZ 300 //300 //720 // number of cells in each direction
+#define N_SD_MAX 1e8
+#define NXNYNZ 454 // number of cells in each direction
 #define SEDI 1
 #define RCYC 0
 #define N_REP 1e0
@@ -429,7 +429,7 @@ int main(int argc, char *argv[]){
   
 #if defined Onishi || defined Wang
     opts_init.dry_distros.emplace(
-      0.1, // key (kappa)
+      0, // key (kappa)
       std::make_shared<exp_dry_radii<real_t>> () // value
     );
 #else
