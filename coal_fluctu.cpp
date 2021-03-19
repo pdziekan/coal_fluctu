@@ -31,7 +31,7 @@
 //#define variable_dt
 
 #define cutoff 40e-6
-#define HallDavis
+//#define HallDavis
 #define HIST_BINS 21
 #define BACKEND CUDA
 #define N_SD_MAX 27e6
@@ -283,10 +283,14 @@ int main(int argc, char *argv[]){
 
 #ifdef cutoff
   of_setup << "init distr cutoff at " << cutoff << " microns!" << std::endl;
+#else
+  of_setup << "no init distr cutoff" << std::endl;
 #endif
 
 #ifdef variable_dt
   of_setup << "variable dt run" << std::endl;
+#else
+  of_setup << "const dt run" << std::endl;
 #endif
 
 #ifdef Onishi
@@ -425,7 +429,7 @@ int main(int argc, char *argv[]){
   
 #if defined Onishi || defined Wang
     opts_init.dry_distros.emplace(
-      0, // key (kappa)
+      0.1, // key (kappa)
       std::make_shared<exp_dry_radii<real_t>> () // value
     );
 #else
@@ -679,7 +683,8 @@ int main(int argc, char *argv[]){
         }
     
         // output
-        printf("rep no: %3d progress: %3d%%: dt: %lf sstp_coal: %3d rw_max %lf [um] mean_sd_conc %lf max_sedi_courant %lf max_sgs_courant %lf t10_tot %lf\n", rep, int(time / SIMTIME * 100), opts.dt, prtcls->diag_sstp_coal(), rep_max_rw * 1e6, mean_sd_conc, Cmax_vt, Cmax_sgs, t10_tot[rep]);
+        //printf("rep no: %3d progress: %3d%%: dt: %lf sstp_coal: %3d rw_max %lf [um] mean_sd_conc %lf max_sedi_courant %lf max_sgs_courant %lf t10_tot %lf\n", rep, int(time / SIMTIME * 100), opts.dt, prtcls->diag_sstp_coal(), rep_max_rw * 1e6, mean_sd_conc, Cmax_vt, Cmax_sgs, t10_tot[rep]);
+        of_progress << "rep no: " << rep << " progress: " <<  int(time / SIMTIME * 100) << " dt: " << opts.dt << " sstp_coal: " << prtcls->diag_sstp_coal() << " rw_max: " << rep_max_rw * 1e6 << " [um] mean_sd_conc: " << mean_sd_conc << " max_sedi_courant: " << Cmax_vt << " max_sgs_courant: " << Cmax_sgs << " t10_tot: " << t10_tot[rep] << std::endl;
         of_rmax << rep_max_rw << " ";
         of_tau << rain_mass_tot / init_tot_cloud_mass << " ";
         of_time << time << " ";
