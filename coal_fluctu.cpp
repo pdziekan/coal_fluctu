@@ -26,7 +26,7 @@
 #define HIST_BINS 5001
 #define BACKEND multi_CUDA
 #define N_SD_MAX 4e8 //1e8
-#define NXNYNZ 720 // number of cells in each direction
+#define NXNYNZ 400 // number of cells in each direction
 #define SEDI 1
 #define RCYC 0
 #define N_REP 1e0
@@ -162,6 +162,7 @@ void diag(particles_proto_t<real_t> *prtcls, std::array<real_t, HIST_BINS> &res_
   prtcls->diag_wet_mom(3);
   real_t sum = 0;
   auto out = prtcls->outbuf();
+  #pragma omp parallel for reduction(+ : sum)
   for(int c=0; c < n_cell; ++c)
     sum += out[c];
   std::cout << "3rd wet mom mean: " << sum / n_cell << std::endl;
@@ -281,6 +282,8 @@ int main(){
   std::vector<std::array<real_t, HIST_BINS>> res_stddev_bins_post(n_rep);
 //  auto res_bins_post = new real_t[n_rep][HIST_BINS];
   std::iota(rad_bins.begin(), rad_bins.end(), 0);
+
+  #pragma omp parallel for
   for (auto &rad_bin : rad_bins)
   {
     rad_bin = rad_bin * 1e-6;// + 10e-6; 
@@ -412,20 +415,32 @@ int main(){
     prtcls->diag_wet_rng(0, 40e-6); // cloud water (like in Onishi)
     prtcls->diag_wet_mom(3);
     auto arr = prtcls->outbuf();
+    #pragma omp parallel for
     for(int j=0; j<n_cell; ++j)
     {
       init_cloud_mass[j] = arr[j];
+    }
+    #pragma omp parallel for reduction(+ : init_tot_cloud_mass)
+    for(int j=0; j<n_cell; ++j)
+    {
       init_tot_cloud_mass += arr[j];
     }
   
     prtcls->diag_wet_rng(40e-6, 1); // rain water (like in Onishi)
     prtcls->diag_wet_mom(3);
     arr = prtcls->outbuf();
+    #pragma omp parallel for
     for(int j=0; j<n_cell; ++j)
     {
       init_rain_mass[j] = arr[j];
+    }
+    #pragma omp parallel for reduction(+ : init_tot_rain_mass)
+    for(int j=0; j<n_cell; ++j)
+    {
       init_tot_rain_mass += arr[j];
     }
+
+    std::cout << "init tot cloud mass: " << init_tot_cloud_mass << std::endl;
   
     real_t rep_max_rw = 0.;
     // get max rw
@@ -478,20 +493,21 @@ int main(){
       prtcls->diag_sd_conc();
       arr = prtcls->outbuf();
       real_t mean_sd_conc = 0;
+
+      #pragma omp parallel for reduction(+ : mean_sd_conc)
       for(int j=0; j<n_cell; ++j)
       {
         mean_sd_conc += arr[j]; 
       }
       mean_sd_conc /= real_t(n_cell);
   
-  printf("\rrep no: %3d progress: %3d%%: rw_max %lf mean_sd_conc %lf t10_tot %lf", rep, int(real_t(i) / sim_time * 100), rep_max_rw, mean_sd_conc, t10_tot[rep]);
-  std::cout << std::flush;
-  
       // get t10 (time to conver 10% of cloud water into rain water)
       prtcls->diag_wet_rng(40e-6, 1); // rain water (like in Onishi)
       prtcls->diag_wet_mom(3);
       arr = prtcls->outbuf();
       real_t cloud_mass_tot = 0;
+
+      #pragma omp parallel for reduction(+ : cloud_mass_tot)
       for(int j=0; j<n_cell; ++j)
       {
 //        if(t10[j + rep * n_cell] == 0. && arr[j] >= init_cloud_mass[j] * .1)
@@ -501,6 +517,9 @@ int main(){
       }
       if(t10_tot[rep] == 0. && cloud_mass_tot >= init_tot_cloud_mass * .1)
         t10_tot[rep] =  i * opts_init.dt;
+  
+      printf("\rrep no: %3d progress: %3d%%: rw_max %lf mean_sd_conc %lf t10_tot %lf cloud_mass_tot %lf", rep, int(real_t(i) / sim_time * 100), rep_max_rw, mean_sd_conc, t10_tot[rep], cloud_mass_tot);
+      std::cout << std::flush;
 
 //      prtcls->diag_wet_mom(0);
 //      arr = prtcls->outbuf();
