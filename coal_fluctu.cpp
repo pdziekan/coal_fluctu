@@ -22,24 +22,25 @@
 #include <chrono>
 
 
-#define Onishi
-//#define Wang
+//#define Onishi
+#define Wang
+//#define Wang_lowN
 
 //#define sgs_ST
 #define sgs_GA17
 
-//#define variable_dt
+#define variable_dt
 
-#define cutoff 40e-6
-//#define HallDavis
-#define HIST_BINS 21
+#define cutoff 20e-6
+#define HallDavis
+#define HIST_BINS 11
 #define BACKEND CUDA
 #define N_SD_MAX 1e8
 #define NXNYNZ 454 // number of cells in each direction
 #define SEDI 1
 #define RCYC 0
 #define N_REP 1e0
-#define SIMTIME 800 // [s]
+#define SIMTIME 10000 // [s]
 #define NP 1e0 // init number of droplets per cell
 #define DT 0.1 // [s]
 #define DISS_RATE 1 // [cm^2 / s^3]
@@ -47,9 +48,9 @@
 #define NModes 20 // number of synthethic turbulence modes.
 #define NWaves 50 // (max)number of wave vectors for each synthethic turbulence mode.
 #define MaxCourant 1 // dt will be adjusted to keep courants less than this
-#define OUTFREQ 800 // output done every SIMTIME / OUTFREQ seconds
+#define OUTFREQ 10000 // output done every SIMTIME / OUTFREQ seconds
 #define MAXRINTERVAL 0.1 // maximum r is diagnosed every MAXRINTERVAL seconds
-#define REMOVE_R 250 // [um] droplets larger than this will be removed 
+#define REMOVE_R 100 // [um] droplets larger than this will be removed 
 
 
 #if defined sgs_ST && defined sgs_GA17
@@ -58,6 +59,10 @@
 
 #if defined Onishi && defined Wang
   #error Both Wang and Onishi defined
+#endif
+
+#if defined Wang_lowN && !defined Wang
+  #error Wang_lowN defined, vut Wang not defined
 #endif
 
 using namespace std;
@@ -80,8 +85,13 @@ const quantity<power_typeof_helper<si::length, static_rational<-3>>::type, real_
 #ifdef Wang
 const quantity<si::length, real_t>
   mean_rd1 = real_t(9.3e-6) * si::metres;  // WANG 2007 (and Unterstrasser 2017)
-const quantity<power_typeof_helper<si::length, static_rational<-3>>::type, real_t>
-  n1_stp = real_t(297e6) / si::cubic_metres; // WANG 2007 (and Unter 2017)
+  #ifdef Wang_lowN
+  const quantity<power_typeof_helper<si::length, static_rational<-3>>::type, real_t>
+    n1_stp = real_t(29.7e6) / si::cubic_metres;
+  #else
+  const quantity<power_typeof_helper<si::length, static_rational<-3>>::type, real_t>
+    n1_stp = real_t(297e6) / si::cubic_metres; // WANG 2007 (and Unter 2017)
+  #endif
 #endif
 
 //  mean_rd1 = real_t(0.02e-6) * si::metres;  // api_lgrngn
@@ -129,7 +139,7 @@ const auto temperature = libcloudphxx::common::theta_dry::T<real_t>(theta_val * 
 const auto pressure = libcloudphxx::common::theta_dry::p<real_t>(rho_stp_f * si::kilograms / si::cubic_meters, rv_val, temperature);
 const auto visc = libcloudphxx::common::vterm::visc(temperature);
 
-const real_t outinterval = SIMTIME / OUTFREQ;
+const real_t outinterval = double(SIMTIME) / double(OUTFREQ);
 
 const int sd_const_multi = 1; const real_t sd_conc = 0; const bool tail = 0;
 //  const int sd_const_multi = 0; const real_t sd_conc = 1e3; const bool tail = 1;
@@ -296,7 +306,11 @@ int main(int argc, char *argv[]){
 #ifdef Onishi
   of_setup << "Onishi (expvolume) run!" << std::endl;
 #elif defined Wang
+  #ifdef Wang_lowN
+  of_setup << "Wang (expvolume) with reduced N run!" << std::endl;
+  #else
   of_setup << "Wang (expvolume) run!" << std::endl;
+  #endif
 #endif
 
 #ifdef sgs_ST
@@ -615,7 +629,13 @@ int main(int argc, char *argv[]){
       tbeg = std::chrono::system_clock::now();
       if(time > maxrtime)
       {
-        maxrtime += MAXRINTERVAL;
+        maxrtime += std::max<float>(MAXRINTERVAL,
+#ifdef variable_dt
+          opts.dt
+#else
+          opts_init.dt
+#endif
+        );
         // get max rw
         prtcls->diag_max_rw();
         arr = prtcls->outbuf();
