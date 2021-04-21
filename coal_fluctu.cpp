@@ -22,8 +22,10 @@
 #include <chrono>
 
 
-//#define Onishi
-#define Wang
+#define Onishi
+#define Onishi_halfN
+
+//#define Wang
 //#define Wang_lowN
 
 //#define sgs_ST
@@ -31,27 +33,31 @@
 
 #define variable_dt
 
-#define cutoff 20e-6
+#define cutoff 40e-6
 #define HallDavis
 #define HIST_BINS 11
 #define BACKEND CUDA
 #define N_SD_MAX 1e8
-#define NXNYNZ 454 // number of cells in each direction
+#define NXNYNZ 1 // number of cells in each direction
 #define SEDI 1
 #define RCYC 0
-#define N_REP 1e0
-#define SIMTIME 10000 // [s]
-#define NP 1e0 // init number of droplets per cell
+#define N_REP 1e1
+#define SIMTIME 1000 // [s]
+#define NP 1e6 // init number of droplets per cell
 #define DT 0.1 // [s]
-#define DISS_RATE 1 // [cm^2 / s^3]
+#define DISS_RATE 0.1 // [cm^2 / s^3]
 #define LKOL 1e-3 // Kolmogorov length scale[m]. Smallest synthetic eddies are od this size 
 #define NModes 20 // number of synthethic turbulence modes.
 #define NWaves 50 // (max)number of wave vectors for each synthethic turbulence mode.
 #define MaxCourant 1 // dt will be adjusted to keep courants less than this
-#define OUTFREQ 10000 // output done every SIMTIME / OUTFREQ seconds
+#define OUTFREQ 1000 // output done every SIMTIME / OUTFREQ seconds
 #define MAXRINTERVAL 0.1 // maximum r is diagnosed every MAXRINTERVAL seconds
-#define REMOVE_R 100 // [um] droplets larger than this will be removed 
+#define REMOVE_R 10000 // [um] droplets larger than this will be removed 
+#define STOP_R 1000 // [um] simulation is stopped once that large droplet is formed
 
+#if REMOVE_R < STOP_R
+  #error REMOVE_R < STOP_R
+#endif
 
 #if defined sgs_ST && defined sgs_GA17
   #error Both sgs_ST and sgs_GA17 defined
@@ -63,6 +69,10 @@
 
 #if defined Wang_lowN && !defined Wang
   #error Wang_lowN defined, vut Wang not defined
+#endif
+
+#if defined Onishi_halfN && !defined Onishi
+  #error Onishi_halfN defined, vut Onishi not defined
 #endif
 
 using namespace std;
@@ -78,8 +88,13 @@ namespace lognormal = libcloudphxx::common::lognormal;
 #ifdef Onishi
 const quantity<si::length, real_t>
   mean_rd1 = real_t(15e-6) * si::metres;  
-const quantity<power_typeof_helper<si::length, static_rational<-3>>::type, real_t>
-  n1_stp = real_t(142e6) / si::cubic_metres; 
+  #ifdef Onishi_halfN
+  const quantity<power_typeof_helper<si::length, static_rational<-3>>::type, real_t>
+    n1_stp = real_t(71e6) / si::cubic_metres; 
+  #else
+  const quantity<power_typeof_helper<si::length, static_rational<-3>>::type, real_t>
+    n1_stp = real_t(142e6) / si::cubic_metres; 
+  #endif
 #endif
 
 #ifdef Wang
@@ -304,7 +319,11 @@ int main(int argc, char *argv[]){
 #endif
 
 #ifdef Onishi
+  #ifdef Onishi_halfN
+  of_setup << "Onishi (expvolume) with halved N run!" << std::endl;
+  #else
   of_setup << "Onishi (expvolume) run!" << std::endl;
+  #endif
 #elif defined Wang
   #ifdef Wang_lowN
   of_setup << "Wang (expvolume) with reduced N run!" << std::endl;
@@ -643,6 +662,12 @@ int main(int argc, char *argv[]){
         #pragma omp parallel for reduction(max : rep_max_rw)
         for(int j=0; j<n_cell; ++j)
           rep_max_rw = rep_max_rw > arr[j] ? rep_max_rw : arr[j];
+
+        if(rep_max_rw * 1e6 > STOP_R)
+        {
+          std::cout << "STOP_R exceeded, max_r: " << rep_max_rw*1e6 << " at " << time << std::endl;
+          break; 
+        } 
       }
       tend = std::chrono::system_clock::now();
       tdiagmax += std::chrono::duration_cast<std::chrono::milliseconds>( tend - tbeg );
