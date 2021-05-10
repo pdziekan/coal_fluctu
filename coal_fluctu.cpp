@@ -23,25 +23,25 @@
 
 
 
-//#define Onishi
-#define Wang
+#define Onishi
+//#define Wang
 #define cutoff 40e-6
 #define HallDavis
 
 #define HIST_BINS 5001
 #define BACKEND CUDA
-#define N_SD_MAX 1e8 //1e8
-#define NXNYNZ 20 //720 // number of cells in each direction
+#define N_SD_MAX 1e8
+#define NXNYNZ 300 //720 // number of cells in each direction
 #define SEDI 1
 #define RCYC 0
-#define N_REP 1e1
-#define SIMTIME 5000 // [s]
-#define NP 1e3 // init number of droplets per cell
+#define N_REP 1e0
+#define SIMTIME 800 // [s]
+#define NP 1e0 // init number of droplets per cell
 #define DT 0.1 // [s]
 #define DISS_RATE 1 // [cm^2 / s^3]
 #define LKOL 1e-3 // Kolmogorov length scale[m]. Smallest synthetic eddies are od this size 
-#define NModes 20 // number of synthethic turbulence modes.
-#define NWaves 50 // (max)number of wave vectors for each synthethic turbulence mode.
+#define NModes 6 // number of synthethic turbulence modes.
+#define NWaves 6 // (max)number of wave vectors for each synthethic turbulence mode.
 #define MaxCourant 1 // dt will be adjusted to keep courants less than this
 #define OUTFREQ 1000 // output done every SIMTIME / OUTFREQ seconds
 #define REMOVE_R 250 // [um] droplets larger than this will be removed 
@@ -433,6 +433,7 @@ int main(int argc, char *argv[]){
     opts_init.dt=DT;
     opts_init.sstp_coal = sstp_coal; 
     opts_init.sstp_cond = 1; 
+    opts_init.variable_dt_switch = true;
 //    opts_init.kernel = kernel_t::hall_pinsky_1000mb_grav;
 #ifdef HallDavis
     opts_init.kernel = kernel_t::hall_davis_no_waals;
@@ -744,6 +745,10 @@ int main(int argc, char *argv[]){
   
     diag(prtcls.get(), res_bins_post[rep], res_stddev_bins_post[rep]);
     std::cout << std::endl;
+
+    auto raw_ptr = prtcls.release();
+    delete raw_ptr;
+
   }
 
 
