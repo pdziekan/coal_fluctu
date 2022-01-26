@@ -38,13 +38,19 @@
 #define HIST_BINS 11
 #define BACKEND CUDA
 #define N_SD_MAX 1e8
+//#define NXNYNZ 300 // number of cells in each direction
 #define NXNYNZ 1 // number of cells in each direction
-#define SEDI 1
+#if NXNYNZ > 1
+  #define SEDI 1
+#else
+  #define SEDI 0
+#endif
 #define RCYC 0
-#define N_REP 1e1
-#define SIMTIME 1000 // [s]
-#define NP 1e6 // init number of droplets per cell
-#define DT 0.1 // [s]
+#define N_REP 1e2
+#define SIMTIME 10000 // [s]
+//#define NP 1 // init number of droplets per cell
+#define NP 27e6 // init number of droplets per cell
+#define DT 1 // [s]
 #define DISS_RATE 0.1 // [cm^2 / s^3]
 #define LKOL 1e-3 // Kolmogorov length scale[m]. Smallest synthetic eddies are od this size 
 #define NModes 20 // number of synthethic turbulence modes.
@@ -53,7 +59,7 @@
 #define OUTFREQ 1000 // output done every SIMTIME / OUTFREQ seconds
 #define MAXRINTERVAL 0.1 // maximum r is diagnosed every MAXRINTERVAL seconds
 #define REMOVE_R 10000 // [um] droplets larger than this will be removed 
-#define STOP_R 1000 // [um] simulation is stopped once that large droplet is formed
+#define STOP_R 300 // [um] simulation is stopped once that large droplet is formed
 
 #if REMOVE_R < STOP_R
   #error REMOVE_R < STOP_R
@@ -301,6 +307,7 @@ int main(int argc, char *argv[]){
   std::ofstream of_series(outprefix+"series.dat");
   std::ofstream of_tau(outprefix+"tau.dat");
   std::ofstream of_rmax(outprefix+"rmax.dat");
+  std::ofstream of_rstop(outprefix+"rstop.dat");
   std::ofstream of_nrain(outprefix+"nrain.dat");
   std::ofstream of_time(outprefix+"time.dat");
   std::ofstream of_setup(outprefix+"setup.dat");
@@ -665,7 +672,7 @@ int main(int argc, char *argv[]){
 
         if(rep_max_rw * 1e6 > STOP_R)
         {
-          std::cout << "STOP_R exceeded, max_r: " << rep_max_rw*1e6 << " at " << time << std::endl;
+          of_rstop << "STOP_R exceeded, max_r: " << rep_max_rw*1e6 << " at " << time << std::endl;
           break; 
         } 
       }
