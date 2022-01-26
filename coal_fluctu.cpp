@@ -22,8 +22,14 @@
 #include <chrono>
 
 
-#define Onishi
-#define Onishi_halfN
+// initial disitrubtion options: Alfonso (bi-disperse), MarshallPalmer (rain), Wang (smaller droplets), Onishi (larger droplets)
+// Alfonso used if no other is defined below
+
+#define MarshallPalmer
+#define R_MP 1 // assumed rainfall in Marshall=Palmer [mm/h]
+
+//#define Onishi
+//#define Onishi_halfN
 
 //#define Wang
 //#define Wang_lowN
@@ -69,8 +75,24 @@
   #error Both sgs_ST and sgs_GA17 defined
 #endif
 
-#if defined Onishi && defined Wang
-  #error Both Wang and Onishi defined
+//#if defined Onishi && defined Wang
+//  #error Both Wang and Onishi defined
+//#endif
+
+#if (defined(Onishi) && defined(Wang))
+  #error Onishi and Wang both defined 
+#endif
+
+#if (defined(Onishi) && defined(MarshallPalmer))
+  #error Onishi and MarshallPalmer both defined 
+#endif
+
+#if (defined(Wang) && defined(MarshallPalmer))
+  #error Wang and MarshallPalmer both defined 
+#endif
+
+#if !defined(Onishi) && !defined(Wang) && !defined(MarshallPalmer)
+  #error Alfonso distribution does not work now (issues with cell_vol, dx,dy,dz)
 #endif
 
 #if defined Wang_lowN && !defined Wang
@@ -115,6 +137,12 @@ const quantity<si::length, real_t>
   #endif
 #endif
 
+#ifdef MarshallPalmer
+  constexpr real_t n0_MP = real_t(0.08) * 1e8; // [1/m^4] 
+  constexpr real_t lambda_MP = real_t(41) * 1e2 * pow(R_MP, real_t(-0.21)); // [1/m]
+  constexpr real_t Ntot_MP = n0_MP / lambda_MP;
+#endif
+
 //  mean_rd1 = real_t(0.02e-6) * si::metres;  // api_lgrngn
 //  mean_rd1 = real_t(10.177e-6) * si::metres;  // Shima small
 const quantity<si::dimensionless, real_t>
@@ -136,7 +164,11 @@ constexpr real_t Np = NP; // number of droplets per simulation (collision cell)
 constexpr real_t Np_in_avg_r_max_cell = Np; // number of droplets per large cells in which we look for r_max
 //#ifdef Onishi
 //  const int n_cells_per_avg_r_max_cell = Np_in_avg_r_max_cell / Np;
-  constexpr real_t cell_vol = Np /  (n1_stp * si::cubic_metres); // for Onishi comparison
+#if defined Onishi || defined Wang
+  constexpr real_t cell_vol = Np /  (n1_stp * si::cubic_metres);
+#elif defined MarshallPalmer
+  constexpr real_t cell_vol = Np / Ntot_MP;
+#endif
   constexpr real_t dx = pow(cell_vol, real_t(1./3.));
   constexpr real_t dy = pow(cell_vol, real_t(1./3.));
   constexpr real_t dz = pow(cell_vol, real_t(1./3.));
@@ -170,38 +202,59 @@ std::chrono::system_clock::time_point tbeg, tend;
 std::chrono::milliseconds tloop, tinit, tadjust, tsync, tasync, trmr, tdiagmax, tdiag;
 
 // lognormal aerosol distribution
-template <typename T>
-struct log_dry_radii : public libcloudphxx::common::unary_function<T>
-{
-  T funval(const T lnrd) const
-  {   
-    return T(( 
-        lognormal::n_e(mean_rd1, sdev_rd1, n1_stp, quantity<si::dimensionless, real_t>(lnrd))
-      // +  lognormal::n_e(mean_rd2, sdev_rd2, n2_stp, quantity<si::dimensionless, real_t>(lnrd)) 
-      ) * si::cubic_metres
-    );  
-  }   
+// template <typename T>
+// struct log_dry_radii : public libcloudphxx::common::unary_function<T>
+// {
+//   T funval(const T lnrd) const
+//   {   
+//     return T(( 
+//         lognormal::n_e(mean_rd1, sdev_rd1, n1_stp, quantity<si::dimensionless, real_t>(lnrd))
+//       // +  lognormal::n_e(mean_rd2, sdev_rd2, n2_stp, quantity<si::dimensionless, real_t>(lnrd)) 
+//       ) * si::cubic_metres
+//     );  
+//   }   
+// 
+//   log_dry_radii *do_clone() const 
+//   { return new log_dry_radii( *this ); }
+// };  
 
-  log_dry_radii *do_clone() const 
-  { return new log_dry_radii( *this ); }
-};  
-
-// aerosol distribution exponential in droplet volume as a function of ln(r)
-template <typename T>
-struct exp_dry_radii : public libcloudphxx::common::unary_function<T>
-{
-  T funval(const T lnrd) const
-  {   
-    T r = exp(lnrd);
-#ifdef cutoff
-    if(r>= cutoff) return 0.; else 
+#if defined Onishi || defined Wang
+  // aerosol distribution exponential in droplet volume ( n(m) = n0/m_mean*exp(-m/m_mean) ) as a function of ln(r) 
+  template <typename T>
+  struct exp_dry_radii : public libcloudphxx::common::unary_function<T>
+  {
+    T funval(const T lnrd) const
+    {   
+      T r = exp(lnrd);
+  #ifdef cutoff
+      if(r>= cutoff) return 0.; else 
+  #endif
+  return (n1_stp * si::cubic_metres) * 3. * pow(r,3) / pow(mean_rd1 / si::metres, 3) * exp( - pow(r/(mean_rd1 / si::metres), 3));
+    }   
+  
+    exp_dry_radii *do_clone() const 
+    { return new exp_dry_radii( *this ); }
+  };  
 #endif
-return (n1_stp * si::cubic_metres) * 3. * pow(r,3) / pow(mean_rd1 / si::metres, 3) * exp( - pow(r/(mean_rd1 / si::metres), 3));
-  }   
 
-  exp_dry_radii *do_clone() const 
-  { return new exp_dry_radii( *this ); }
-};  
+#ifdef MarshallPalmer
+  // aerosol distribution exponential in droplet diameter ( n(D)=n0*exp(-lambda*D) ) as a function of ln(r) 
+  template <typename T>
+  struct exp_dry_radii_MP : public libcloudphxx::common::unary_function<T>
+  {
+    T funval(const T lnrd) const
+    {   
+      T r = exp(lnrd);
+  #ifdef cutoff
+      if(r>= cutoff) return 0.; else 
+  #endif
+  return 2. * n0_MP * r * exp(- 2. * lambda_MP * r );
+    }   
+  
+    exp_dry_radii_MP *do_clone() const 
+    { return new exp_dry_radii_MP( *this ); }
+  };  
+#endif
 
 void diag(particles_proto_t<real_t> *prtcls, std::array<real_t, HIST_BINS> &res_bins, std::array<real_t, HIST_BINS> &res_stddev_bins, std::ofstream &ofs)
 {
@@ -337,6 +390,8 @@ int main(int argc, char *argv[]){
   #else
   of_setup << "Wang (expvolume) run!" << std::endl;
   #endif
+#elif defined MarshallPalmer
+  of_setup << "MarshallPalmer run!" << std::endl;
 #endif
 
 #ifdef sgs_ST
@@ -348,6 +403,11 @@ int main(int argc, char *argv[]){
 #if defined Onishi || defined Wang
   of_setup << "Np = " << Np << std::endl;
   of_setup << "Np per avg cell = " << Np_in_avg_r_max_cell << std::endl;
+#elif defined MarshallPalmer
+  of_setup << "n0_MP = " << n0_MP << std::endl;
+  of_setup << "R_MP = " << R_MP << std::endl;
+  of_setup << "lambda_MP = " << lambda_MP << std::endl;
+  of_setup << "Ntot_MP [1-m^3], cutoff not included in this calculation = " << Ntot_MP << std::endl;
 #else
   of_setup << "Alfonso (bi-disperse) run!" << std::endl;
 #endif
@@ -363,8 +423,10 @@ int main(int argc, char *argv[]){
             << " const_multi = " << sd_const_multi
             << " sd_conc = " << sd_conc
             << " tail = " << tail
+#if defined Onishi || defined Wang
             << " mean_rd1 = " << mean_rd1
             << " n1_stp = " << n1_stp
+#endif
             << " sedi = " << SEDI
             << " rcyc = " << RCYC
             << " backend = " << BACKEND
@@ -428,7 +490,7 @@ int main(int argc, char *argv[]){
   //  cell_vol = opts_init.dx * opts_init.dy * opts_init.dz;
   
     opts_init.sedi_switch=1;
-    opts_init.src_switch=0;
+    //opts_init.src_switch=0;
     opts_init.chem_switch=0;
 
 #ifdef sgs_ST
@@ -471,6 +533,11 @@ int main(int argc, char *argv[]){
     opts_init.dry_distros.emplace(
       0, // key (kappa)
       std::make_shared<exp_dry_radii<real_t>> () // value
+    );
+#elif defined MarshallPalmer
+    opts_init.dry_distros.emplace(
+      0, // key (kappa)
+      std::make_shared<exp_dry_radii_MP<real_t>> () // value
     );
 #else
     opts_init.dry_sizes.emplace(
