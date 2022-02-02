@@ -21,6 +21,7 @@
 #include <future>
 #include <chrono>
 
+// ---- init DSD ---
 
 // initial disitrubtion options: Alfonso (bi-disperse), MarshallPalmer (rain), Wang (smaller droplets), Onishi (larger droplets)
 // Alfonso used if no other is defined below
@@ -34,38 +35,58 @@
 //#define Wang
 //#define Wang_lowN
 
+// ---- SGS model ----
+
 //#define sgs_ST
 #define sgs_GA17
 
-#define variable_dt
+// ---- cell size ----
 
-#define cutoff 40e-6
-#define HallDavis
-#define HIST_BINS 11
-#define BACKEND CUDA
-#define N_SD_MAX 1e8
+//#define NXNYNZ 1 // number of cells in each direction
+//#define NP 27e6 // init number of droplets per cell
+//#define DT 3 // [s]
 //#define NXNYNZ 300 // number of cells in each direction
+//#define NP 1 // init number of droplets per cell
+//#define DT 1e-2 // [s]
+
 #define NXNYNZ 1 // number of cells in each direction
+#define NP 64e6 // init number of droplets per cell
+#define DT 4 // [s]
+//#define NXNYNZ 400 // number of cells in each direction
+//#define NP 1 // init number of droplets per cell
+//#define DT 1e-2 // [s]
+
+
+// ---- init max radius and stop/remove radius ----
+#define cutoff 2e-3 // [m] init distr cutoff
+#define REMOVE_R 100000000 // [um] droplets larger than this will be removed 
+#define STOP_R 2500 // [um] simulation is stopped once that large droplet is formed
+
+// ---- important parameters ----
+
+#define N_REP 1e2
+#define SIMTIME 20000 // [s]
+#define OUTFREQ 20000 // output done every SIMTIME / OUTFREQ seconds
+#define DISS_RATE 1 // [cm^2 / s^3]
+
+// ---- less important stuff ----
+
+#define variable_dt
+#define HallDavis
+#define HIST_BINS 301
+#define BACKEND CUDA
+#define N_SD_MAX (NP*NXNYNZ*NXNYNZ*NXNYNZ)
 #if NXNYNZ > 1
   #define SEDI 1
 #else
   #define SEDI 0
 #endif
 #define RCYC 0
-#define N_REP 1e2
-#define SIMTIME 10000 // [s]
-//#define NP 1 // init number of droplets per cell
-#define NP 27e6 // init number of droplets per cell
-#define DT 1 // [s]
-#define DISS_RATE 0.1 // [cm^2 / s^3]
 #define LKOL 1e-3 // Kolmogorov length scale[m]. Smallest synthetic eddies are od this size 
 #define NModes 20 // number of synthethic turbulence modes.
 #define NWaves 50 // (max)number of wave vectors for each synthethic turbulence mode.
 #define MaxCourant 1 // dt will be adjusted to keep courants less than this
-#define OUTFREQ 1000 // output done every SIMTIME / OUTFREQ seconds
 #define MAXRINTERVAL 0.1 // maximum r is diagnosed every MAXRINTERVAL seconds
-#define REMOVE_R 10000 // [um] droplets larger than this will be removed 
-#define STOP_R 300 // [um] simulation is stopped once that large droplet is formed
 
 #if REMOVE_R < STOP_R
   #error REMOVE_R < STOP_R
@@ -106,7 +127,7 @@
 using namespace std;
 using namespace libcloudphxx::lgrngn;
 
-using real_t = float;
+using real_t = double;//float;
 
 namespace hydrostatic = libcloudphxx::common::hydrostatic;
 namespace theta_std = libcloudphxx::common::theta_std;
@@ -320,15 +341,28 @@ void diag(particles_proto_t<real_t> *prtcls, std::array<real_t, HIST_BINS> &res_
     mean = mean * rho_stp_f; // mean number of droplets of radius rad [1/m^3]
     std_dev *= rho_stp_f;
     
-    // to get mass in bins in [g/cm^3]
+    // to get number density n(r) [1/cm^3]
+    /*
+    res_bins[i]= mean / 1e6 // now its number per cm^3
+                      / (rad_bins[i+1] - rad_bins[i]);
+    res_stddev_bins[i]= std_dev / 1e6 // now its number per cm^3
+                      / (rad_bins[i+1] - rad_bins[i]); // is this correct for std dev?
+    */
     
+    // to get mass in bins in [g/cm^3]
+    /*    
     res_bins[i]= mean / 1e6 // now its number per cm^3
                      * 3.14 *4. / 3. *rad * rad * rad * 1e3 * 1e3;  // to get mass in grams
     res_stddev_bins[i]= std_dev / 1e6 // now its number per cm^3
                      * 3.14 *4. / 3. *rad * rad * rad * 1e3 * 1e3;  // to get mass in grams
+    */
     
+    // to get mass density function m(r) [g/m^3]
+    res_bins[i] = mean / (rad_bins[i+1] - rad_bins[i]) // number density 
+                    * 4./3.*3.14*pow(rad,3)*1e3        // * vol * density
+                    * 1e3;                             // to get grams
 
-    // to get mass density function (not through libcloudphxx estimator)
+    // to get mass density function m(lnr) (not through libcloudphxx estimator)
     /*
     res_bins[i] = mean / (rad_bins[i+1] - rad_bins[i]) // number density 
                     * 4./3.*3.14*pow(rad,4)*1e3        // * vol * rad * density
@@ -353,9 +387,10 @@ int main(int argc, char *argv[]){
 
   std::string outprefix(argv[1]);
 
-  std::ofstream of_size_spectr(outprefix+"size_spectr.dat");
-  if (!of_size_spectr.is_open())
+  std::ofstream of_size_spectr_mean(outprefix+"size_spectr_mean.dat");
+  if (!of_size_spectr_mean.is_open())
     throw std::runtime_error("Error opening output file, wrong path?");
+  std::ofstream of_size_spectr(outprefix+"size_spectr.dat");
   std::ofstream of_progress(outprefix+"progress.dat");
   std::ofstream of_series(outprefix+"series.dat");
   std::ofstream of_tau(outprefix+"tau.dat");
@@ -367,7 +402,7 @@ int main(int argc, char *argv[]){
   std::ofstream of_t10_tot(outprefix+"t10_tot.dat");
 
 #ifdef cutoff
-  of_setup << "init distr cutoff at " << cutoff << " microns!" << std::endl;
+  of_setup << "init distr cutoff at " << cutoff << " meters" << std::endl;
 #else
   of_setup << "no init distr cutoff" << std::endl;
 #endif
@@ -392,6 +427,8 @@ int main(int argc, char *argv[]){
   #endif
 #elif defined MarshallPalmer
   of_setup << "MarshallPalmer run!" << std::endl;
+#else
+  of_setup << "Alfonso (bi-disperse) run!" << std::endl;
 #endif
 
 #ifdef sgs_ST
@@ -400,17 +437,17 @@ int main(int argc, char *argv[]){
   of_setup << "GA17 sgs_adve" << std::endl;
 #endif
 
-#if defined Onishi || defined Wang
+#if defined Onishi || defined Wang || defined MarshallPalmer
   of_setup << "Np = " << Np << std::endl;
   of_setup << "Np per avg cell = " << Np_in_avg_r_max_cell << std::endl;
-#elif defined MarshallPalmer
+#endif
+#if defined MarshallPalmer
   of_setup << "n0_MP = " << n0_MP << std::endl;
   of_setup << "R_MP = " << R_MP << std::endl;
   of_setup << "lambda_MP = " << lambda_MP << std::endl;
   of_setup << "Ntot_MP [1-m^3], cutoff not included in this calculation = " << Ntot_MP << std::endl;
-#else
-  of_setup << "Alfonso (bi-disperse) run!" << std::endl;
 #endif
+
   of_setup << "dx = " << dx * 1e2  << "cm (cell vol = " << cell_vol * 1e6 << " cm^3)"<< std::endl;
   of_setup << "x1 = " << dx * nx * 1e2  << "cm (domain vol = "<< dx * nx * dy * ny * dz * nz  << " m^3)" << std::endl;
 
@@ -437,6 +474,7 @@ int main(int argc, char *argv[]){
             << " MaxCourant = " << MaxCourant
             << " OUTFREQ = " << OUTFREQ
             << " REMOVE_R = " << REMOVE_R
+            << " STOP_R = " << STOP_R
 #ifdef HallDavis
             << " kernel: Hall & Davis"
 #else
@@ -459,10 +497,9 @@ int main(int argc, char *argv[]){
   std::vector<std::array<real_t, HIST_BINS>> res_bins_post(n_rep);
   std::vector<std::array<real_t, HIST_BINS>> res_stddev_bins_post(n_rep);
   std::iota(rad_bins.begin(), rad_bins.end(), 0);
-  #pragma omp parallel for
   for (auto &rad_bin : rad_bins)
   {
-    rad_bin = rad_bin * 1e-6;// + 10e-6; 
+    rad_bin = rad_bin * 10e-6;// + 10e-6; 
   }
 
   // repetitions loop
@@ -707,7 +744,7 @@ int main(int argc, char *argv[]){
       tasync += std::chrono::duration_cast<std::chrono::milliseconds>( tend - tbeg );
       tbeg = tend;
 
-      prtcls->remove_wet_rng(REMOVE_R*1e-6, 1);
+      prtcls->remove_wet_rng(REMOVE_R * 1e-6, 1);
       tend = std::chrono::system_clock::now();
       trmr += std::chrono::duration_cast<std::chrono::milliseconds>( tend - tbeg );
 
@@ -739,7 +776,7 @@ int main(int argc, char *argv[]){
 
         if(rep_max_rw * 1e6 > STOP_R)
         {
-          of_rstop << "STOP_R exceeded, max_r: " << rep_max_rw*1e6 << " at " << time << std::endl;
+          of_rstop << "STOP_R exceeded, max_r: " << rep_max_rw*1e6 << " um at " << time << " s" << std::endl;
           break; 
         } 
       }
@@ -821,13 +858,22 @@ int main(int argc, char *argv[]){
       tend = std::chrono::system_clock::now();
       tdiag += std::chrono::duration_cast<std::chrono::milliseconds>( tend - tbeg );
     }
+  
+    diag(prtcls.get(), res_bins_post[rep], res_stddev_bins_post[rep],of_progress);
+
+    // output size spectr
+    for (int i=0; i <rad_bins.size() -1; ++i)
+    {
+      real_t rad = (rad_bins[i] + rad_bins[i+1]) / 2.;
+      of_size_spectr << rad * 1e6 << " " << res_bins_pre[rep][i] << " " << res_bins_post[rep][i] << std::endl; 
+    }
+
     of_rmax << std::endl;
     of_tau << std::endl;
     of_nrain << std::endl;
     of_time << std::endl;
-  
-    diag(prtcls.get(), res_bins_post[rep], res_stddev_bins_post[rep],of_progress);
     of_progress << std::endl;
+    of_size_spectr << std::endl;
 
     auto raw_ptr = prtcls.release();
     delete raw_ptr;
@@ -853,7 +899,7 @@ int main(int argc, char *argv[]){
   of_progress << "mean(t10% in the domain) = " << mean_t10_tot << std::endl;
   of_progress << "std_dev(t10% in the domain) = " << std_dev_t10_tot << std::endl;
 
-// output
+  // output mean and std_dev of size spectr
   for (int i=0; i <rad_bins.size() -1; ++i)
   {
     real_t rad = (rad_bins[i] + rad_bins[i+1]) / 2.;
@@ -867,6 +913,6 @@ int main(int argc, char *argv[]){
     pre /= n_rep;
     post /= n_rep;
     stddev_post /= n_rep;
-    of_size_spectr << rad * 1e6 << " " << pre << " " << post << " " << stddev_post << std::endl; 
+    of_size_spectr_mean << rad * 1e6 << " " << pre << " " << post << " " << stddev_post << std::endl; 
   }
 }
