@@ -475,6 +475,7 @@ int main(int argc, char *argv[]){
             << " OUTFREQ = " << OUTFREQ
             << " REMOVE_R = " << REMOVE_R
             << " STOP_R = " << STOP_R
+            << " DISS_RATE = " << DISS_RATE
 #ifdef HallDavis
             << " kernel: Hall & Davis"
 #else
