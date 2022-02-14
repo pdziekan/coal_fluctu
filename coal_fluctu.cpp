@@ -21,39 +21,72 @@
 #include <future>
 #include <chrono>
 
+// ---- init DSD ---
 
-#define Onishi
-#define Onishi_halfN
+// initial disitrubtion options: Alfonso (bi-disperse), MarshallPalmer (rain), Wang (smaller droplets), Onishi (larger droplets)
+// Alfonso used if no other is defined below
+
+#define MarshallPalmer
+#define R_MP 1 // assumed rainfall in Marshall=Palmer [mm/h]
+
+//#define Onishi
+//#define Onishi_halfN
 
 //#define Wang
 //#define Wang_lowN
 
+// ---- SGS model ----
+
 //#define sgs_ST
 #define sgs_GA17
 
-#define variable_dt
+// ---- cell size ----
 
-#define cutoff 40e-6
-#define HallDavis
-#define HIST_BINS 11
-#define BACKEND CUDA
-#define N_SD_MAX 1e8
+//#define NXNYNZ 1 // number of cells in each direction
+//#define NP 27e6 // init number of droplets per cell
+//#define DT 3 // [s]
+//#define NXNYNZ 300 // number of cells in each direction
+//#define NP 1 // init number of droplets per cell
+//#define DT 1e-2 // [s]
+
 #define NXNYNZ 1 // number of cells in each direction
-#define SEDI 1
+#define NP 64e6 // init number of droplets per cell
+#define DT 4 // [s]
+//#define NXNYNZ 400 // number of cells in each direction
+//#define NP 1 // init number of droplets per cell
+//#define DT 1e-2 // [s]
+
+
+// ---- init max radius and stop/remove radius ----
+#define cutoff 2e-3 // [m] init distr cutoff
+#define REMOVE_R 100000000 // [um] droplets larger than this will be removed 
+#define STOP_R 2500 // [um] simulation is stopped once that large droplet is formed
+
+// ---- important parameters ----
+
+#define N_REP 1e2
+#define SIMTIME 20000 // [s]
+#define OUTFREQ 20000 // output done every SIMTIME / OUTFREQ seconds
+#define DISS_RATE 1 // [cm^2 / s^3]
+
+// ---- less important stuff ----
+
+#define variable_dt
+#define HallDavis
+#define HIST_BINS 301
+#define BACKEND CUDA
+#define N_SD_MAX (NP*NXNYNZ*NXNYNZ*NXNYNZ)
+#if NXNYNZ > 1
+  #define SEDI 1
+#else
+  #define SEDI 0
+#endif
 #define RCYC 0
-#define N_REP 1e1
-#define SIMTIME 1000 // [s]
-#define NP 1e6 // init number of droplets per cell
-#define DT 0.1 // [s]
-#define DISS_RATE 0.1 // [cm^2 / s^3]
 #define LKOL 1e-3 // Kolmogorov length scale[m]. Smallest synthetic eddies are od this size 
 #define NModes 20 // number of synthethic turbulence modes.
 #define NWaves 50 // (max)number of wave vectors for each synthethic turbulence mode.
 #define MaxCourant 1 // dt will be adjusted to keep courants less than this
-#define OUTFREQ 1000 // output done every SIMTIME / OUTFREQ seconds
 #define MAXRINTERVAL 0.1 // maximum r is diagnosed every MAXRINTERVAL seconds
-#define REMOVE_R 10000 // [um] droplets larger than this will be removed 
-#define STOP_R 1000 // [um] simulation is stopped once that large droplet is formed
 
 #if REMOVE_R < STOP_R
   #error REMOVE_R < STOP_R
@@ -63,8 +96,24 @@
   #error Both sgs_ST and sgs_GA17 defined
 #endif
 
-#if defined Onishi && defined Wang
-  #error Both Wang and Onishi defined
+//#if defined Onishi && defined Wang
+//  #error Both Wang and Onishi defined
+//#endif
+
+#if (defined(Onishi) && defined(Wang))
+  #error Onishi and Wang both defined 
+#endif
+
+#if (defined(Onishi) && defined(MarshallPalmer))
+  #error Onishi and MarshallPalmer both defined 
+#endif
+
+#if (defined(Wang) && defined(MarshallPalmer))
+  #error Wang and MarshallPalmer both defined 
+#endif
+
+#if !defined(Onishi) && !defined(Wang) && !defined(MarshallPalmer)
+  #error Alfonso distribution does not work now (issues with cell_vol, dx,dy,dz)
 #endif
 
 #if defined Wang_lowN && !defined Wang
@@ -78,7 +127,7 @@
 using namespace std;
 using namespace libcloudphxx::lgrngn;
 
-using real_t = float;
+using real_t = double;//float;
 
 namespace hydrostatic = libcloudphxx::common::hydrostatic;
 namespace theta_std = libcloudphxx::common::theta_std;
@@ -109,6 +158,12 @@ const quantity<si::length, real_t>
   #endif
 #endif
 
+#ifdef MarshallPalmer
+  constexpr real_t n0_MP = real_t(0.08) * 1e8; // [1/m^4] 
+  constexpr real_t lambda_MP = real_t(41) * 1e2 * pow(R_MP, real_t(-0.21)); // [1/m]
+  constexpr real_t Ntot_MP = n0_MP / lambda_MP;
+#endif
+
 //  mean_rd1 = real_t(0.02e-6) * si::metres;  // api_lgrngn
 //  mean_rd1 = real_t(10.177e-6) * si::metres;  // Shima small
 const quantity<si::dimensionless, real_t>
@@ -130,7 +185,11 @@ constexpr real_t Np = NP; // number of droplets per simulation (collision cell)
 constexpr real_t Np_in_avg_r_max_cell = Np; // number of droplets per large cells in which we look for r_max
 //#ifdef Onishi
 //  const int n_cells_per_avg_r_max_cell = Np_in_avg_r_max_cell / Np;
-  constexpr real_t cell_vol = Np /  (n1_stp * si::cubic_metres); // for Onishi comparison
+#if defined Onishi || defined Wang
+  constexpr real_t cell_vol = Np /  (n1_stp * si::cubic_metres);
+#elif defined MarshallPalmer
+  constexpr real_t cell_vol = Np / Ntot_MP;
+#endif
   constexpr real_t dx = pow(cell_vol, real_t(1./3.));
   constexpr real_t dy = pow(cell_vol, real_t(1./3.));
   constexpr real_t dz = pow(cell_vol, real_t(1./3.));
@@ -164,38 +223,59 @@ std::chrono::system_clock::time_point tbeg, tend;
 std::chrono::milliseconds tloop, tinit, tadjust, tsync, tasync, trmr, tdiagmax, tdiag;
 
 // lognormal aerosol distribution
-template <typename T>
-struct log_dry_radii : public libcloudphxx::common::unary_function<T>
-{
-  T funval(const T lnrd) const
-  {   
-    return T(( 
-        lognormal::n_e(mean_rd1, sdev_rd1, n1_stp, quantity<si::dimensionless, real_t>(lnrd))
-      // +  lognormal::n_e(mean_rd2, sdev_rd2, n2_stp, quantity<si::dimensionless, real_t>(lnrd)) 
-      ) * si::cubic_metres
-    );  
-  }   
+// template <typename T>
+// struct log_dry_radii : public libcloudphxx::common::unary_function<T>
+// {
+//   T funval(const T lnrd) const
+//   {   
+//     return T(( 
+//         lognormal::n_e(mean_rd1, sdev_rd1, n1_stp, quantity<si::dimensionless, real_t>(lnrd))
+//       // +  lognormal::n_e(mean_rd2, sdev_rd2, n2_stp, quantity<si::dimensionless, real_t>(lnrd)) 
+//       ) * si::cubic_metres
+//     );  
+//   }   
+// 
+//   log_dry_radii *do_clone() const 
+//   { return new log_dry_radii( *this ); }
+// };  
 
-  log_dry_radii *do_clone() const 
-  { return new log_dry_radii( *this ); }
-};  
-
-// aerosol distribution exponential in droplet volume as a function of ln(r)
-template <typename T>
-struct exp_dry_radii : public libcloudphxx::common::unary_function<T>
-{
-  T funval(const T lnrd) const
-  {   
-    T r = exp(lnrd);
-#ifdef cutoff
-    if(r>= cutoff) return 0.; else 
+#if defined Onishi || defined Wang
+  // aerosol distribution exponential in droplet volume ( n(m) = n0/m_mean*exp(-m/m_mean) ) as a function of ln(r) 
+  template <typename T>
+  struct exp_dry_radii : public libcloudphxx::common::unary_function<T>
+  {
+    T funval(const T lnrd) const
+    {   
+      T r = exp(lnrd);
+  #ifdef cutoff
+      if(r>= cutoff) return 0.; else 
+  #endif
+  return (n1_stp * si::cubic_metres) * 3. * pow(r,3) / pow(mean_rd1 / si::metres, 3) * exp( - pow(r/(mean_rd1 / si::metres), 3));
+    }   
+  
+    exp_dry_radii *do_clone() const 
+    { return new exp_dry_radii( *this ); }
+  };  
 #endif
-return (n1_stp * si::cubic_metres) * 3. * pow(r,3) / pow(mean_rd1 / si::metres, 3) * exp( - pow(r/(mean_rd1 / si::metres), 3));
-  }   
 
-  exp_dry_radii *do_clone() const 
-  { return new exp_dry_radii( *this ); }
-};  
+#ifdef MarshallPalmer
+  // aerosol distribution exponential in droplet diameter ( n(D)=n0*exp(-lambda*D) ) as a function of ln(r) 
+  template <typename T>
+  struct exp_dry_radii_MP : public libcloudphxx::common::unary_function<T>
+  {
+    T funval(const T lnrd) const
+    {   
+      T r = exp(lnrd);
+  #ifdef cutoff
+      if(r>= cutoff) return 0.; else 
+  #endif
+  return 2. * n0_MP * r * exp(- 2. * lambda_MP * r );
+    }   
+  
+    exp_dry_radii_MP *do_clone() const 
+    { return new exp_dry_radii_MP( *this ); }
+  };  
+#endif
 
 void diag(particles_proto_t<real_t> *prtcls, std::array<real_t, HIST_BINS> &res_bins, std::array<real_t, HIST_BINS> &res_stddev_bins, std::ofstream &ofs)
 {
@@ -261,15 +341,28 @@ void diag(particles_proto_t<real_t> *prtcls, std::array<real_t, HIST_BINS> &res_
     mean = mean * rho_stp_f; // mean number of droplets of radius rad [1/m^3]
     std_dev *= rho_stp_f;
     
-    // to get mass in bins in [g/cm^3]
+    // to get number density n(r) [1/cm^3]
+    /*
+    res_bins[i]= mean / 1e6 // now its number per cm^3
+                      / (rad_bins[i+1] - rad_bins[i]);
+    res_stddev_bins[i]= std_dev / 1e6 // now its number per cm^3
+                      / (rad_bins[i+1] - rad_bins[i]); // is this correct for std dev?
+    */
     
+    // to get mass in bins in [g/cm^3]
+    /*    
     res_bins[i]= mean / 1e6 // now its number per cm^3
                      * 3.14 *4. / 3. *rad * rad * rad * 1e3 * 1e3;  // to get mass in grams
     res_stddev_bins[i]= std_dev / 1e6 // now its number per cm^3
                      * 3.14 *4. / 3. *rad * rad * rad * 1e3 * 1e3;  // to get mass in grams
+    */
     
+    // to get mass density function m(r) [g/m^3]
+    res_bins[i] = mean / (rad_bins[i+1] - rad_bins[i]) // number density 
+                    * 4./3.*3.14*pow(rad,3)*1e3        // * vol * density
+                    * 1e3;                             // to get grams
 
-    // to get mass density function (not through libcloudphxx estimator)
+    // to get mass density function m(lnr) (not through libcloudphxx estimator)
     /*
     res_bins[i] = mean / (rad_bins[i+1] - rad_bins[i]) // number density 
                     * 4./3.*3.14*pow(rad,4)*1e3        // * vol * rad * density
@@ -294,20 +387,22 @@ int main(int argc, char *argv[]){
 
   std::string outprefix(argv[1]);
 
-  std::ofstream of_size_spectr(outprefix+"size_spectr.dat");
-  if (!of_size_spectr.is_open())
+  std::ofstream of_size_spectr_mean(outprefix+"size_spectr_mean.dat");
+  if (!of_size_spectr_mean.is_open())
     throw std::runtime_error("Error opening output file, wrong path?");
+  std::ofstream of_size_spectr(outprefix+"size_spectr.dat");
   std::ofstream of_progress(outprefix+"progress.dat");
   std::ofstream of_series(outprefix+"series.dat");
   std::ofstream of_tau(outprefix+"tau.dat");
   std::ofstream of_rmax(outprefix+"rmax.dat");
+  std::ofstream of_rstop(outprefix+"rstop.dat");
   std::ofstream of_nrain(outprefix+"nrain.dat");
   std::ofstream of_time(outprefix+"time.dat");
   std::ofstream of_setup(outprefix+"setup.dat");
   std::ofstream of_t10_tot(outprefix+"t10_tot.dat");
 
 #ifdef cutoff
-  of_setup << "init distr cutoff at " << cutoff << " microns!" << std::endl;
+  of_setup << "init distr cutoff at " << cutoff << " meters" << std::endl;
 #else
   of_setup << "no init distr cutoff" << std::endl;
 #endif
@@ -330,6 +425,10 @@ int main(int argc, char *argv[]){
   #else
   of_setup << "Wang (expvolume) run!" << std::endl;
   #endif
+#elif defined MarshallPalmer
+  of_setup << "MarshallPalmer run!" << std::endl;
+#else
+  of_setup << "Alfonso (bi-disperse) run!" << std::endl;
 #endif
 
 #ifdef sgs_ST
@@ -338,12 +437,17 @@ int main(int argc, char *argv[]){
   of_setup << "GA17 sgs_adve" << std::endl;
 #endif
 
-#if defined Onishi || defined Wang
+#if defined Onishi || defined Wang || defined MarshallPalmer
   of_setup << "Np = " << Np << std::endl;
   of_setup << "Np per avg cell = " << Np_in_avg_r_max_cell << std::endl;
-#else
-  of_setup << "Alfonso (bi-disperse) run!" << std::endl;
 #endif
+#if defined MarshallPalmer
+  of_setup << "n0_MP = " << n0_MP << std::endl;
+  of_setup << "R_MP = " << R_MP << std::endl;
+  of_setup << "lambda_MP = " << lambda_MP << std::endl;
+  of_setup << "Ntot_MP [1-m^3], cutoff not included in this calculation = " << Ntot_MP << std::endl;
+#endif
+
   of_setup << "dx = " << dx * 1e2  << "cm (cell vol = " << cell_vol * 1e6 << " cm^3)"<< std::endl;
   of_setup << "x1 = " << dx * nx * 1e2  << "cm (domain vol = "<< dx * nx * dy * ny * dz * nz  << " m^3)" << std::endl;
 
@@ -356,8 +460,10 @@ int main(int argc, char *argv[]){
             << " const_multi = " << sd_const_multi
             << " sd_conc = " << sd_conc
             << " tail = " << tail
+#if defined Onishi || defined Wang
             << " mean_rd1 = " << mean_rd1
             << " n1_stp = " << n1_stp
+#endif
             << " sedi = " << SEDI
             << " rcyc = " << RCYC
             << " backend = " << BACKEND
@@ -368,6 +474,8 @@ int main(int argc, char *argv[]){
             << " MaxCourant = " << MaxCourant
             << " OUTFREQ = " << OUTFREQ
             << " REMOVE_R = " << REMOVE_R
+            << " STOP_R = " << STOP_R
+            << " DISS_RATE = " << DISS_RATE
 #ifdef HallDavis
             << " kernel: Hall & Davis"
 #else
@@ -390,10 +498,9 @@ int main(int argc, char *argv[]){
   std::vector<std::array<real_t, HIST_BINS>> res_bins_post(n_rep);
   std::vector<std::array<real_t, HIST_BINS>> res_stddev_bins_post(n_rep);
   std::iota(rad_bins.begin(), rad_bins.end(), 0);
-  #pragma omp parallel for
   for (auto &rad_bin : rad_bins)
   {
-    rad_bin = rad_bin * 1e-6;// + 10e-6; 
+    rad_bin = rad_bin * 10e-6;// + 10e-6; 
   }
 
   // repetitions loop
@@ -421,7 +528,7 @@ int main(int argc, char *argv[]){
   //  cell_vol = opts_init.dx * opts_init.dy * opts_init.dz;
   
     opts_init.sedi_switch=1;
-    opts_init.src_switch=0;
+    //opts_init.src_switch=0;
     opts_init.chem_switch=0;
 
 #ifdef sgs_ST
@@ -464,6 +571,11 @@ int main(int argc, char *argv[]){
     opts_init.dry_distros.emplace(
       0, // key (kappa)
       std::make_shared<exp_dry_radii<real_t>> () // value
+    );
+#elif defined MarshallPalmer
+    opts_init.dry_distros.emplace(
+      0, // key (kappa)
+      std::make_shared<exp_dry_radii_MP<real_t>> () // value
     );
 #else
     opts_init.dry_sizes.emplace(
@@ -633,7 +745,7 @@ int main(int argc, char *argv[]){
       tasync += std::chrono::duration_cast<std::chrono::milliseconds>( tend - tbeg );
       tbeg = tend;
 
-      prtcls->remove_wet_rng(REMOVE_R*1e-6, 1);
+      prtcls->remove_wet_rng(REMOVE_R * 1e-6, 1);
       tend = std::chrono::system_clock::now();
       trmr += std::chrono::duration_cast<std::chrono::milliseconds>( tend - tbeg );
 
@@ -665,7 +777,7 @@ int main(int argc, char *argv[]){
 
         if(rep_max_rw * 1e6 > STOP_R)
         {
-          std::cout << "STOP_R exceeded, max_r: " << rep_max_rw*1e6 << " at " << time << std::endl;
+          of_rstop << "STOP_R exceeded, max_r: " << rep_max_rw*1e6 << " um at " << time << " s" << std::endl;
           break; 
         } 
       }
@@ -747,13 +859,22 @@ int main(int argc, char *argv[]){
       tend = std::chrono::system_clock::now();
       tdiag += std::chrono::duration_cast<std::chrono::milliseconds>( tend - tbeg );
     }
+  
+    diag(prtcls.get(), res_bins_post[rep], res_stddev_bins_post[rep],of_progress);
+
+    // output size spectr
+    for (int i=0; i <rad_bins.size() -1; ++i)
+    {
+      real_t rad = (rad_bins[i] + rad_bins[i+1]) / 2.;
+      of_size_spectr << rad * 1e6 << " " << res_bins_pre[rep][i] << " " << res_bins_post[rep][i] << std::endl; 
+    }
+
     of_rmax << std::endl;
     of_tau << std::endl;
     of_nrain << std::endl;
     of_time << std::endl;
-  
-    diag(prtcls.get(), res_bins_post[rep], res_stddev_bins_post[rep],of_progress);
     of_progress << std::endl;
+    of_size_spectr << std::endl;
 
     auto raw_ptr = prtcls.release();
     delete raw_ptr;
@@ -779,7 +900,7 @@ int main(int argc, char *argv[]){
   of_progress << "mean(t10% in the domain) = " << mean_t10_tot << std::endl;
   of_progress << "std_dev(t10% in the domain) = " << std_dev_t10_tot << std::endl;
 
-// output
+  // output mean and std_dev of size spectr
   for (int i=0; i <rad_bins.size() -1; ++i)
   {
     real_t rad = (rad_bins[i] + rad_bins[i+1]) / 2.;
@@ -793,6 +914,6 @@ int main(int argc, char *argv[]){
     pre /= n_rep;
     post /= n_rep;
     stddev_post /= n_rep;
-    of_size_spectr << rad * 1e6 << " " << pre << " " << post << " " << stddev_post << std::endl; 
+    of_size_spectr_mean << rad * 1e6 << " " << pre << " " << post << " " << stddev_post << std::endl; 
   }
 }
