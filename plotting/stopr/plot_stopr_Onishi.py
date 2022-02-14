@@ -4,54 +4,54 @@ import matplotlib.pyplot as plt
 data_labels = {}
 data_colors = {}
 
-directory = "/home/piotr/praca/coal_fluctu_dim/lucky_droplets_vs_cell_size/data/LCM/GA17_from_libcloudphxx/GA17_Np27e6_nx1_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300"
+directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/OnishihalfN/LCM/zero_dim/GA17_Np27e6_nx1_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300"
 data_labels[directory+ "/"] = "LCM Np27e6 nx1 stopr300, var dt 1, GA17 libcloudphxx eps 0.1, OnishihalfN, HallDavis"
 data_labels[directory+ "/"] = "LCM one large coalescence cell"
 data_colors[directory+ "/"] = "red"
 
-directory = "/home/piotr/praca/coal_fluctu_dim/lucky_droplets_vs_cell_size/data/LCM/GA17_from_libcloudphxx/GA17_Np27e6_nx1_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300_2"
+directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/OnishihalfN/LCM/zero_dim/GA17_Np27e6_nx1_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300_2"
 data_labels[directory+ "/"] = "LCM Np27e6 nx1 stopr300, var dt 1, GA17 libcloudphxx eps 0.1, OnishihalfN, HallDavis RE2"
 data_labels[directory+ "/"] = ""
 data_colors[directory+ "/"] = "red"
 
-directory = "/home/piotr/praca/coal_fluctu_dim/lucky_droplets_vs_cell_size/data/LCM/GA17_from_libcloudphxx/GA17_Np27e6_nx1_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300_3"
+directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/OnishihalfN/LCM/zero_dim/GA17_Np27e6_nx1_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300_3"
 data_labels[directory+ "/"] = "LCM Np27e6 nx1 stopr300, var dt 1, GA17 libcloudphxx eps 0.1, OnishihalfN, HallDavis RE3"
 data_labels[directory+ "/"] = ""
 data_colors[directory+ "/"] = "red"
 
-directory = "/home/piotr/praca/coal_fluctu_dim/lucky_droplets_vs_cell_size/data/LCM/GA17_from_libcloudphxx/GA17_Np27e6_nx1_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300_4"
+directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/OnishihalfN/LCM/zero_dim/GA17_Np27e6_nx1_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300_4"
 data_labels[directory+ "/"] = "LCM Np27e6 nx1 stopr300, var dt 1, GA17 libcloudphxx eps 0.1, OnishihalfN, HallDavis RE4"
 data_labels[directory+ "/"] = ""
 data_colors[directory+ "/"] = "red"
 
-directory = "/home/piotr/praca/coal_fluctu_dim/lucky_droplets_vs_cell_size/data/LCM/GA17_from_libcloudphxx/GA17_Np27e6_nx1_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300_5"
+directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/OnishihalfN/LCM/zero_dim/GA17_Np27e6_nx1_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300_5"
 data_labels[directory+ "/"] = "LCM Np27e6 nx1 stopr300, var dt 1, GA17 libcloudphxx eps 0.1, OnishihalfN, HallDavis RE5"
 data_labels[directory+ "/"] = ""
 data_colors[directory+ "/"] = "red"
 
 
 
-directory = "/home/piotr/praca/coal_fluctu_dim/lucky_droplets_vs_cell_size/data/LCM/GA17_from_libcloudphxx/GA17_Np1e0_nx300_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300"
+directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/OnishihalfN/LCM/GA17_from_libcloudphxx/GA17_Np1e0_nx300_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300"
 data_labels[directory+ "/"] = "LCM Np1e0 nx300 stopr300, var dt 1, GA17 libcloudphxx eps 0.1, OnishihalfN, HallDavis"
 data_labels[directory+ "/"] = "LCM multiple coalescence cells, each with 1 droplet on average"
 data_colors[directory+ "/"] = "blue"
 
-directory = "/home/piotr/praca/coal_fluctu_dim/lucky_droplets_vs_cell_size/data/LCM/GA17_from_libcloudphxx/GA17_Np1e0_nx300_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300_2"
+directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/OnishihalfN/LCM/GA17_from_libcloudphxx/GA17_Np1e0_nx300_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300_2"
 data_labels[directory+ "/"] = "LCM Np1e0 nx300 stopr300, var dt 1, GA17 libcloudphxx eps 0.1, OnishihalfN, HallDavis, RE2"
 data_labels[directory+ "/"] = ""
 data_colors[directory+ "/"] = "blue"
 
-directory = "/home/piotr/praca/coal_fluctu_dim/lucky_droplets_vs_cell_size/data/LCM/GA17_from_libcloudphxx/GA17_Np1e0_nx300_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300_3"
+directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/OnishihalfN/LCM/GA17_from_libcloudphxx/GA17_Np1e0_nx300_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300_3"
 data_labels[directory+ "/"] = "LCM Np1e0 nx300 stopr300, var dt 1, GA17 libcloudphxx eps 0.1, OnishihalfN, HallDavis, RE3"
 data_labels[directory+ "/"] = ""
 data_colors[directory+ "/"] = "blue"
 
-directory = "/home/piotr/praca/coal_fluctu_dim/lucky_droplets_vs_cell_size/data/LCM/GA17_from_libcloudphxx/GA17_Np1e0_nx300_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300_4"
+directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/OnishihalfN/LCM/GA17_from_libcloudphxx/GA17_Np1e0_nx300_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300_4"
 data_labels[directory+ "/"] = "LCM Np1e0 nx300 stopr300, var dt 1, GA17 libcloudphxx eps 0.1, OnishihalfN, HallDavis, RE4"
 data_labels[directory+ "/"] = ""
 data_colors[directory+ "/"] = "blue"
 
-directory = "/home/piotr/praca/coal_fluctu_dim/lucky_droplets_vs_cell_size/data/LCM/GA17_from_libcloudphxx/GA17_Np1e0_nx300_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300_5"
+directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/OnishihalfN/LCM/GA17_from_libcloudphxx/GA17_Np1e0_nx300_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300_5"
 data_labels[directory+ "/"] = "LCM Np1e0 nx300 stopr300, var dt 1, GA17 libcloudphxx eps 0.1, OnishihalfN, HallDavis, RE5"
 data_labels[directory+ "/"] = ""
 data_colors[directory+ "/"] = "blue"
@@ -77,7 +77,7 @@ for pre in data_labels:
   for row in all_stopr:
     rad = np.append(rad,float(row[3]))
     time = np.append(time,float(row[5]))
-  print(time,rad)
+#  print(time,rad)
   ax.scatter(time,rad, label=data_labels[pre], color=data_colors[pre], s=3, alpha=0.3)
   aggregated_time[data_colors[pre]] = np.append(aggregated_time[data_colors[pre]], time)
   aggregated_rad[data_colors[pre]] = np.append(aggregated_rad[data_colors[pre]], rad)
@@ -100,7 +100,7 @@ ax.set_xlabel('time [s]')
 ax.set_ylabel('radius [um]')
 
 plt.legend()
-fig.savefig("/home/piotr/praca/coal_fluctu_dim/lucky_droplets_vs_cell_size/img/lucky_droplets_vs_cell_size_LCM.png")
-plt.show()
+fig.savefig("/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/img/stopr/Onishi_stopr_vs_cell_size_LCM.png")
+#plt.show()
 #
 #
