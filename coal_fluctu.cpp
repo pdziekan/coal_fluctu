@@ -26,10 +26,10 @@
 // initial disitrubtion options: Alfonso (bi-disperse), MarshallPalmer (rain), Wang (smaller droplets), Onishi (larger droplets)
 // Alfonso used if no other is defined below
 
-#define MarshallPalmer
-#define R_MP 1 // assumed rainfall in Marshall=Palmer [mm/h]
+//#define MarshallPalmer
+//#define R_MP 10 // assumed rainfall in Marshall=Palmer [mm/h]
 
-//#define Onishi
+#define Onishi
 //#define Onishi_halfN
 
 //#define Wang
@@ -42,44 +42,43 @@
 
 // ---- cell size ----
 
-//#define NXNYNZ 1 // number of cells in each direction
-//#define NP 27e6 // init number of droplets per cell
-//#define DT 3 // [s]
-//#define NXNYNZ 300 // number of cells in each direction
-//#define NP 1 // init number of droplets per cell
-//#define DT 1e-2 // [s]
-
 #define NXNYNZ 1 // number of cells in each direction
 #define NP 64e6 // init number of droplets per cell
-#define DT 4 // [s]
+#define DT 0.1 // [s]
 //#define NXNYNZ 400 // number of cells in each direction
 //#define NP 1 // init number of droplets per cell
 //#define DT 1e-2 // [s]
 
 
 // ---- init max radius and stop/remove radius ----
-#define cutoff 2e-3 // [m] init distr cutoff
+//#define cutoff 2.5e-3 // [m] init distr cutoff
 #define REMOVE_R 100000000 // [um] droplets larger than this will be removed 
-#define STOP_R 2500 // [um] simulation is stopped once that large droplet is formed
+#define STOP_R 30000000 // [um] simulation is stopped once that large droplet is formed
 
-// ---- important parameters ----
+// ---- other parameters ----
 
-#define N_REP 1e2
-#define SIMTIME 20000 // [s]
-#define OUTFREQ 20000 // output done every SIMTIME / OUTFREQ seconds
-#define DISS_RATE 1 // [cm^2 / s^3]
+#define N_REP 1e1
+#define SIMTIME 300 // [s]
+#define OUTFREQ 300 // output done every SIMTIME / OUTFREQ seconds
+#define DISS_RATE 0.1 // [cm^2 / s^3]
 
-// ---- less important stuff ----
 
-#define variable_dt
+#define SSTP_COAL 1
 #define HallDavis
-#define HIST_BINS 301
+#define HIST_BINS 51 // number of bins in the output size spectrum
+#define HIST_MIN 1    // minimum radius of the output size spectrum [um]
+#define HIST_MAX 200  // maximum radius of the output size spectrum [um]
 #define BACKEND CUDA
 #define N_SD_MAX (NP*NXNYNZ*NXNYNZ*NXNYNZ)
 #if NXNYNZ > 1
   #define SEDI 1
+  #define ADVE 1
+  #define SGS_ADVE 1
+  #define variable_dt // optional, adjust dt to have max courant < 1
 #else
   #define SEDI 0
+  #define ADVE 0
+  #define SGS_ADVE 0
 #endif
 #define RCYC 0
 #define LKOL 1e-3 // Kolmogorov length scale[m]. Smallest synthetic eddies are od this size 
@@ -199,7 +198,7 @@ constexpr real_t Np_in_avg_r_max_cell = Np; // number of droplets per large cell
 //  const real_t dx = 1e6; // for Shima comparison
 //#endif
 //const int n_large_cells = (nx * ny * nz) / n_cells_per_avg_r_max_cell;
-const int sstp_coal = 1;
+const int sstp_coal = SSTP_COAL;
 
 // sizes of smallest and largest eddies from the synthetic turbulence scheme
 const real_t Lmin = std::max(dx, real_t(LKOL));
@@ -338,8 +337,8 @@ void diag(particles_proto_t<real_t> *prtcls, std::array<real_t, HIST_BINS> &res_
     }
     std_dev = sqrt(std_dev / n_cell);
 
-    mean = mean * rho_stp_f; // mean number of droplets of radius rad [1/m^3]
-    std_dev *= rho_stp_f;
+    mean = mean * rho_stp_f; // number of droplets of radius rad, averaged over all cells [1/m^3]
+    std_dev *= rho_stp_f;    // std dev of the number of droplets of radius rad, calculated from all cells
     
     // to get number density n(r) [1/cm^3]
     /*
@@ -465,6 +464,8 @@ int main(int argc, char *argv[]){
             << " n1_stp = " << n1_stp
 #endif
             << " sedi = " << SEDI
+            << " adve = " << ADVE
+            << " sgs_adve = " << SGS_ADVE
             << " rcyc = " << RCYC
             << " backend = " << BACKEND
             << " NModes = " << NModes
@@ -498,9 +499,12 @@ int main(int argc, char *argv[]){
   std::vector<std::array<real_t, HIST_BINS>> res_bins_post(n_rep);
   std::vector<std::array<real_t, HIST_BINS>> res_stddev_bins_post(n_rep);
   std::iota(rad_bins.begin(), rad_bins.end(), 0);
+  double rmin = HIST_MIN * 1e-6;
+  double rmax = HIST_MAX * 1e-6;
+  double dlogr = (log(rmax) - log(rmin)) / (HIST_BINS-1);
   for (auto &rad_bin : rad_bins)
   {
-    rad_bin = rad_bin * 10e-6;// + 10e-6; 
+    rad_bin = rmin * exp(rad_bin * dlogr);
   }
 
   // repetitions loop
@@ -614,12 +618,12 @@ int main(int argc, char *argv[]){
 //    of_progress << "post init" << std::endl;
   
     opts_t<real_t> opts;
-    opts.adve = 1;
+    opts.adve = ADVE;
     opts.sedi = SEDI;
     opts.cond = 0;
     opts.coal = 1;
     opts.rcyc = RCYC;
-    opts.sgs_adve = 1;
+    opts.sgs_adve = SGS_ADVE;
   
     std::fill(res_bins_pre[rep].begin(), res_bins_pre[rep].end(), 0.);
     std::fill(res_bins_post[rep].begin(), res_bins_post[rep].end(), 0.);
@@ -841,7 +845,13 @@ int main(int argc, char *argv[]){
     
         // output
         //printf("rep no: %3d progress: %3d%%: dt: %lf sstp_coal: %3d rw_max %lf [um] mean_sd_conc %lf max_sedi_courant %lf max_sgs_courant %lf t10_tot %lf\n", rep, int(time / SIMTIME * 100), opts.dt, prtcls->diag_sstp_coal(), rep_max_rw * 1e6, mean_sd_conc, Cmax_vt, Cmax_sgs, t10_tot[rep]);
-        of_progress << "rep no: " << rep << " progress: " <<  int(time / SIMTIME * 100) << " dt: " << opts.dt << " sstp_coal: " << prtcls->diag_sstp_coal() << " rw_max: " << rep_max_rw * 1e6 << " [um] mean_sd_conc: " << mean_sd_conc << " max_sedi_courant: " << Cmax_vt << " max_sgs_courant: " << Cmax_sgs << " t10_tot: " << t10_tot[rep] << std::endl;
+        of_progress << "rep no: " << rep << " progress: " <<  int(time / SIMTIME * 100) << " dt: " << 
+#ifdef variable_dt
+          opts.dt
+#else
+          opts_init.dt
+#endif
+          << " sstp_coal: " << prtcls->diag_sstp_coal() << " rw_max: " << rep_max_rw * 1e6 << " [um] mean_sd_conc: " << mean_sd_conc << " max_sedi_courant: " << Cmax_vt << " max_sgs_courant: " << Cmax_sgs << " t10_tot: " << t10_tot[rep] << std::endl;
         of_rmax << rep_max_rw << " ";
         of_tau << rain_mass_tot / init_tot_cloud_mass << " ";
         of_time << time << " ";
@@ -901,19 +911,27 @@ int main(int argc, char *argv[]){
   of_progress << "std_dev(t10% in the domain) = " << std_dev_t10_tot << std::endl;
 
   // output mean and std_dev of size spectr
+  of_size_spectr_mean << "# radius[um]  mass_density@init_ensemble_mean_of_mean_from_cells[g/m3] mass_density@init_ensemble_std_dev_of_mean_from_cells[g/m3] mass_density@end_ensemble_mean_of_mean_from_cells[g/m3] mass_density@end_ensemble_std_dev_of_mean_from_cells[g/m3]" << std::endl;
   for (int i=0; i <rad_bins.size() -1; ++i)
   {
     real_t rad = (rad_bins[i] + rad_bins[i+1]) / 2.;
-    real_t pre = 0, post = 0, stddev_post = 0;
+    real_t mean_pre = 0, mean_post = 0, stddev_post = 0, stddev_pre = 0;
     for(int j=0; j< n_rep; ++j)
     {
-      pre += res_bins_pre[j][i];
-      post += res_bins_post[j][i];
-      stddev_post += res_stddev_bins_post[j][i];
+      mean_pre += res_bins_pre[j][i];
+      mean_post += res_bins_post[j][i];
     }
-    pre /= n_rep;
-    post /= n_rep;
-    stddev_post /= n_rep;
-    of_size_spectr_mean << rad * 1e6 << " " << pre << " " << post << " " << stddev_post << std::endl; 
+    mean_pre /= n_rep;
+    mean_post /= n_rep;
+    for(int j=0; j< n_rep; ++j)
+    {
+      stddev_pre  += std::pow(res_bins_pre[j][i]  - mean_pre,  2);
+      stddev_post += std::pow(res_bins_post[j][i] - mean_post, 2);
+    }
+    stddev_pre  = std::sqrt(stddev_pre  / n_rep);
+    stddev_post = std::sqrt(stddev_post / n_rep);
+    
+
+    of_size_spectr_mean << rad * 1e6 << " " << mean_pre << " " << stddev_pre << " " << mean_post << " " << stddev_post << std::endl; 
   }
 }
