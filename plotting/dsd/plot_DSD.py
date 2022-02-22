@@ -82,8 +82,10 @@ EFM_dlogr = np.log(efm_data[0][1]) - np.log(efm_data[0][0]) # [log(um)]
 EFM_m_r = EFM_m_logr / EFM_r # mass density m(r) [kg/m3 / m]
 EFM_M = EFM_m_logr * EFM_dlogr * volume # mass of droplets of this size in the cell [kg]
 EFM_N = EFM_M / four_over_three_pi_rhow / np.power(EFM_r,3) # number of droplets of this size in the cell [1]
-EFM_M_std_dev = np.sqrt(four_over_three_pi_rhow * np.power(EFM_r,3) * EFM_M) # std_dev of total mass of droplets of this size in the whole cell [kg]
+EFM_M_std_dev = four_over_three_pi_rhow * np.power(EFM_r,3) * np.sqrt(EFM_N) # std_dev of total mass of droplets of this size in the whole cell [kg]
+# both give the same
 EFM_m_logr_std_dev = EFM_M_std_dev / EFM_dlogr / volume # std_dev of mass density m(log r) [kg/m3]
+#EFM_m_logr_std_dev = np.sqrt(four_over_three_pi_rhow * np.power(EFM_r,3) * EFM_m_logr / EFM_dlogr / volume) # std_dev of mass density m(log r) [kg/m3]
 
 # plot m(log r)
 ax[0].plot(EFM_r * 1e6, EFM_m_logr * 1e3, label="EFM") # radius in [um], mass density in [g/m3 / unit(log[um])]
