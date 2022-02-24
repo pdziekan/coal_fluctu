@@ -11,6 +11,9 @@ data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1
 data_nsd[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300/"] = 64e6
 #data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300_RngSeedInit44/"] = "DT 0.1 ConstMulti1 RngSeedInit"
 
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e5Tail_Ens100_T300/"] = "DT 0.1 SstpCoal1  Sd1e5Tail"
+data_nsd[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e5Tail_Ens100_T300/"] = 1e5
+
 data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e4Tail_Ens100_T300/"] = "DT 0.1 SstpCoal1  Sd1e4Tail"
 data_nsd[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e4Tail_Ens100_T300/"] = 1e4
 
@@ -20,8 +23,8 @@ data_nsd[directory_base + "GA17_Np64e6_nx1_dt0.01_SstpCoal1_Onishi_SdConc1e3Tail
 #data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens100_T300/"]  = "DT 0.1  SstpCoal1  Sd1e3Tail"
 #data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal10_Onishi_SdConc1e3Tail_Ens100_T300/"] = "DT 0.1  SstpCoal10 Sd1e3Tail"
 
-data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens100_T300/"] =               "DT 0.1  SstpCoal1  Sd1e2Tail"
-data_nsd[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens100_T300/"] = 1e2
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] =               "DT 0.1  SstpCoal1  Sd1e2Tail"
+data_nsd[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] = 1e2
 #data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens100_T300_RngSeedInit44/"] = "DT 0.1  SstpCoal10 Sd1e2Tail RngSeedInit"
 
 four_over_three_pi_rhow = 4./3. * np.pi * 1e3 # [kg/m3]
@@ -58,6 +61,8 @@ for pre in data_labels:
 # plot m(log r)
   ax[0].plot(LCM_r * 1e6, LCM_m_logr_end, label='end ' + data_labels[pre])
   ax[1].plot(LCM_r * 1e6, LCM_m_logr_std_dev_end, label='end ' + data_labels[pre])
+# std dev scaled as sqrt(N_SD)
+#  ax[1].plot(LCM_r * 1e6, LCM_m_logr_std_dev_end  * np.sqrt(data_nsd[pre]) / np.sqrt(64e6), label='end ' + data_labels[pre])
 
 # plot m(r)
 #  ax[0].plot(LCM_r * 1e6, LCM_m_r_end, label='end ' + data_labels[pre])
@@ -103,15 +108,19 @@ print("total mass of droplets in the cell in EFM at the end: ", np.sum(EFM_M[int
 
 #plt.title('Time at which largest droplet exceeds 3 mm radius and size of the droplet')
 ax[0].set_xlabel('radius [um]')
+ax[1].set_xlabel('radius [um]')
 #ax[0].set_ylabel('mean mass density m(r) [g/m^3 / m]')
 ax[0].set_ylabel('mean mass density m(log r) [g/m^3 / unit(log[um])')
+ax[1].set_ylabel('standard deviation of mass density m(log r) [g/m^3 / unit(log[um])')
 
 ax[0].set_xscale('log')
 ax[0].set_yscale('log')
 ax[1].set_xscale('log')
 ax[1].set_yscale('log')
+ax[0].set_ylim(1e-7,)
+ax[1].set_ylim(1e-8,)
 
 plt.grid(axis='y', color='0.5')
-#plt.legend()
+plt.legend()
 fig.savefig("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/img/DSD.png")
 #plt.show()
