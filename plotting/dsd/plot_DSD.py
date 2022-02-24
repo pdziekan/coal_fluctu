@@ -93,8 +93,12 @@ EFM_m_logr_std_dev = EFM_M_std_dev / EFM_dlogr / volume # std_dev of mass densit
 #EFM_m_logr_std_dev = np.sqrt(four_over_three_pi_rhow * np.power(EFM_r,3) * EFM_m_logr / EFM_dlogr / volume) # std_dev of mass density m(log r) [kg/m3]
 
 # plot m(log r)
-ax[0].plot(EFM_r * 1e6, EFM_m_logr * 1e3, label="EFM") # radius in [um], mass density in [g/m3 / unit(log[um])]
-ax[1].plot(EFM_r * 1e6, EFM_m_logr_std_dev * 1e3, label="EFM") # radius in [um], mass density in [g/m3 / unit(log[um])]
+EFM_m_logr_init = EFM_m_logr[:int(EFM_N.size/2)]
+EFM_m_logr_end = EFM_m_logr[int(EFM_N.size/2):]
+EFM_m_logr_std_dev_init = EFM_m_logr_std_dev[:int(EFM_N.size/2)]
+EFM_m_logr_std_dev_end = EFM_m_logr_std_dev[int(EFM_N.size/2):]
+ax[0].plot(EFM_r[:int(EFM_N.size/2)] * 1e6, EFM_m_logr_end * 1e3, label="EFM") # radius in [um], mass density in [g/m3 / unit(log[um])]
+ax[1].plot(EFM_r[:int(EFM_N.size/2)] * 1e6, EFM_m_logr_std_dev_end * 1e3, label="EFM") # radius in [um], mass density in [g/m3 / unit(log[um])]
 
 # plot N (number of droplets in the bin)
 #ax[0].plot(EFM_r * 1e6, EFM_N, label='end ' + data_labels[pre])
