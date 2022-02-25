@@ -57,18 +57,19 @@
 
 // ---- other parameters ----
 
-#define N_REP 1e1
+#define N_REP 1e4
 #define SIMTIME 300 // [s]
 #define OUTFREQ 300 // output done every SIMTIME / OUTFREQ seconds
 #define DISS_RATE 0.1 // [cm^2 / s^3]
 
 
+//#define RNG_SEED_INIT 44
 #define SSTP_COAL 1
 #define HallDavis
 #define HIST_BINS 51 // number of bins in the output size spectrum
 #define HIST_MIN 1    // minimum radius of the output size spectrum [um]
 #define HIST_MAX 200  // maximum radius of the output size spectrum [um]
-#define BACKEND CUDA
+#define BACKEND serial // CUDA
 #define N_SD_MAX (NP*NXNYNZ*NXNYNZ*NXNYNZ)
 #if NXNYNZ > 1
   #define SEDI 1
@@ -214,8 +215,8 @@ const auto visc = libcloudphxx::common::vterm::visc(temperature);
 
 const real_t outinterval = double(SIMTIME) / double(OUTFREQ);
 
-const int sd_const_multi = 1; const real_t sd_conc = 0; const bool tail = 0;
-//  const int sd_const_multi = 0; const real_t sd_conc = 1e3; const bool tail = 1;
+//const int sd_const_multi = 1; const real_t sd_conc = 0; const bool tail = 0;
+const int sd_const_multi = 0; const real_t sd_conc = 1e1; const bool tail = 1;
 
 // timing stuff
 std::chrono::system_clock::time_point tbeg, tend;
@@ -455,6 +456,9 @@ int main(int argc, char *argv[]){
             << " n_cell = " << n_cell
             << " SIMTIME = " << SIMTIME
             << " DT = " << DT
+#ifdef RNG_SEED_INIT
+            << " rng_seed_init = " << RNG_SEED_INIT
+#endif
             << " sstp_coal = " << sstp_coal
             << " const_multi = " << sd_const_multi
             << " sd_conc = " << sd_conc
@@ -517,6 +521,10 @@ int main(int argc, char *argv[]){
     opts_init.sstp_cond = 1; 
 #ifdef variable_dt
     opts_init.variable_dt_switch = true;
+#endif
+#ifdef RNG_SEED_INIT
+    opts_init.rng_seed_init = RNG_SEED_INIT;
+    opts_init.rng_seed_init_switch = true;
 #endif
 //    opts_init.kernel = kernel_t::hall_pinsky_1000mb_grav;
 #ifdef HallDavis
@@ -911,7 +919,7 @@ int main(int argc, char *argv[]){
   of_progress << "std_dev(t10% in the domain) = " << std_dev_t10_tot << std::endl;
 
   // output mean and std_dev of size spectr
-  of_size_spectr_mean << "# radius[um]  mass_density@init_ensemble_mean_of_mean_from_cells[g/m3] mass_density@init_ensemble_std_dev_of_mean_from_cells[g/m3] mass_density@end_ensemble_mean_of_mean_from_cells[g/m3] mass_density@end_ensemble_std_dev_of_mean_from_cells[g/m3]" << std::endl;
+  of_size_spectr_mean << "# radius[um]  mass_density@init_ensemble_mean_of_mean_from_cells[g/m3 / m] mass_density@init_ensemble_std_dev_of_mean_from_cells[g/m3 / m] mass_density@end_ensemble_mean_of_mean_from_cells[g/m3 / m] mass_density@end_ensemble_std_dev_of_mean_from_cells[g/m3 / m]" << std::endl;
   for (int i=0; i <rad_bins.size() -1; ++i)
   {
     real_t rad = (rad_bins[i] + rad_bins[i+1]) / 2.;
@@ -932,6 +940,6 @@ int main(int argc, char *argv[]){
     stddev_post = std::sqrt(stddev_post / n_rep);
     
 
-    of_size_spectr_mean << rad * 1e6 << " " << mean_pre << " " << stddev_pre << " " << mean_post << " " << stddev_post << std::endl; 
+    of_size_spectr_mean << rad * 1e6 << " " << mean_pre << " " << stddev_pre << " " << mean_post << " " << stddev_post << std::endl;  
   }
 }
