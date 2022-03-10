@@ -11,7 +11,7 @@ data_colors[directory+ "/"] = "red"
 
 
 
-directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/MarshallPalmer_R10/LCM/synth_turb_from_libcloudphxx/GA17_Np1_nx400_eps0.1_dt0.01var_MP_R10_HallDavis_cutoff2.5mm_stopr3mm_part"
+directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/MarshallPalmer_R10/LCM/GA17_from_libcloudphxx/GA17_Np1_nx400_eps0.1_dt0.01var_MP_R10_HallDavis_cutoff2.5mm_stopr3mm_part"
 data_labels[directory+ "/"] = "LCM Np1e0 nx400 stopr3mm, var dt 0.1, GA17 libcloudphxx eps 0.1, Marshall-Palmer R10, HallDavis"
 data_labels[directory+ "/"] = "LCM multiple coalescence cells, each with 1 droplet on average"
 data_colors[directory+ "/"] = "blue"

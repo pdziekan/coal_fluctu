@@ -78,7 +78,7 @@ for pre in data_labels:
  # ax[1].plot(LCM_r, LCM_m_r_std_dev_end  * np.sqrt(data_nsd[pre]) / np.sqrt(64e6), label='end ' + data_labels[pre])
 
 # EFM results (Smoluchowski)
-efm_data = np.genfromtxt("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/data/EFM/dt 0.1_rq015.0_xmw 2.0_scal15.0_isw3_cut****_rmr****_boplot00.out", unpack=True)
+efm_data = np.genfromtxt("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/data/EFM/dt 0.1_rq015.0_xmw 2.0_scal15.0_isw3_cut****_rmr****_tmax301._boplot00.out", unpack=True)
 # efm_data[0] - radius[um]
 # efm_data[1] - mass density m(ln r) [kg/m3] with radius in microns
 EFM_r = efm_data[0] * 1e-6 # [m]
@@ -124,7 +124,10 @@ ax[1].set_yscale('log')
 ax[0].set_ylim(1e-7,)
 ax[1].set_ylim(1e-8,)
 
+#ax[0].set_xlim(40,)
+#ax[0].set_ylim(0,0.30)
+
 plt.grid(axis='y', color='0.5')
 plt.legend()
-fig.savefig("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/img/DSD.png")
+fig.savefig("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/img/DSD_t300.png")
 #plt.show()
