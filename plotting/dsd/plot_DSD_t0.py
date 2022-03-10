@@ -38,29 +38,27 @@ fig, ax = plt.subplots(1, 2, figsize=(24,9))
 
 for pre in data_labels:
   LCM_r         = np.zeros(0)
-  LCM_m_r_end    = np.zeros(0)
-  LCM_m_r_std_dev_end  = np.zeros(0)
+  LCM_m_r_init   = np.zeros(0)
+  LCM_m_r_std_dev_init = np.zeros(0)
 
   fs = open(pre+"size_spectr_mean.dat","r")
   rows = [x.split() for x in fs.readlines()]
   for row in rows[1:]: # first row is data description
     LCM_r                = np.append(LCM_r,                float(row[0])) # [um]
-    LCM_m_r_end          = np.append(LCM_m_r_end,          float(row[3])) # same
-    LCM_m_r_std_dev_end  = np.append(LCM_m_r_std_dev_end,  float(row[4])) # same
+    LCM_m_r_init         = np.append(LCM_m_r_init,         float(row[1])) # mass density m(r) with LCM_radius in meters [g/m3 / m]
+    LCM_m_r_std_dev_init = np.append(LCM_m_r_std_dev_init, float(row[2])) # same
 
   LCM_dlogr = np.log(LCM_r[1]) - np.log(LCM_r[0]) # [log(um)]
   LCM_r *= 1e-6 # [m]
 
-  LCM_m_logr_end = LCM_m_r_end * LCM_r # [g/m3 / unit(log[um])] 
-  LCM_m_logr_std_dev_end = LCM_m_r_std_dev_end * LCM_r # [g/m3 / unit(log[um])] 
-  LCM_M_end = LCM_m_logr_end * LCM_dlogr * volume * 1e-3 # mass of droplets of this size in the cell [kg]
-  LCM_N_end = LCM_M_end / four_over_three_pi_rhow / np.power(LCM_r,3) # number of droplets of this size in the cell [1]
-  print("total number of droplets in the cell in LCM at the end: ", np.sum(LCM_N_end))
-  print("total mass of droplets in the cell in LCM at the end: ", np.sum(LCM_M_end))
+  LCM_m_logr_init = LCM_m_r_init * LCM_r # [g/m3 / unit(log[um])] 
+  LCM_m_logr_std_dev_init = LCM_m_r_std_dev_init * LCM_r # [g/m3 / unit(log[um])] 
+  LCM_M_init = LCM_m_logr_init * LCM_dlogr * volume * 1e-3 # mass of droplets of this size in the cell [kg]
+  LCM_N_init = LCM_M_init / four_over_three_pi_rhow / np.power(LCM_r,3) # number of droplets of this size in the cell [1]
 
 # plot m(log r)
-  ax[0].plot(LCM_r * 1e6, LCM_m_logr_end, label= data_labels[pre])
-  ax[1].plot(LCM_r * 1e6, LCM_m_logr_std_dev_end, label= data_labels[pre])
+  ax[0].plot(LCM_r * 1e6, LCM_m_logr_init, label= data_labels[pre])
+  ax[1].plot(LCM_r * 1e6, LCM_m_logr_std_dev_init, label= data_labels[pre])
 # std dev scaled as sqrt(N_SD)
 #  ax[1].plot(LCM_r * 1e6, LCM_m_logr_std_dev_end  * np.sqrt(data_nsd[pre]) / np.sqrt(64e6), label='end ' + data_labels[pre])
 
@@ -97,8 +95,8 @@ EFM_m_logr_init = EFM_m_logr[:int(EFM_N.size/2)]
 EFM_m_logr_end = EFM_m_logr[int(EFM_N.size/2):]
 EFM_m_logr_std_dev_init = EFM_m_logr_std_dev[:int(EFM_N.size/2)]
 EFM_m_logr_std_dev_end = EFM_m_logr_std_dev[int(EFM_N.size/2):]
-ax[0].plot(EFM_r[:int(EFM_N.size/2)] * 1e6, EFM_m_logr_end * 1e3, label="EFM") # radius in [um], mass density in [g/m3 / unit(log[um])]
-ax[1].plot(EFM_r[:int(EFM_N.size/2)] * 1e6, EFM_m_logr_std_dev_end * 1e3, label="EFM") # radius in [um], mass density in [g/m3 / unit(log[um])]
+ax[0].plot(EFM_r[:int(EFM_N.size/2)] * 1e6, EFM_m_logr_init * 1e3, label="EFM") # radius in [um], mass density in [g/m3 / unit(log[um])]
+ax[1].plot(EFM_r[:int(EFM_N.size/2)] * 1e6, EFM_m_logr_std_dev_init * 1e3, label="EFM") # radius in [um], mass density in [g/m3 / unit(log[um])]
 
 # plot N (number of droplets in the bin)
 #ax[0].plot(EFM_r * 1e6, EFM_N, label='end ' + data_labels[pre])
@@ -106,9 +104,6 @@ ax[1].plot(EFM_r[:int(EFM_N.size/2)] * 1e6, EFM_m_logr_std_dev_end * 1e3, label=
 #  ax[0].plot(EFM_r * 1e6, efm_data[1] / efm_data[0] * 1e6 * 1e3, label="EFM") 
 #  ax[1].plot(EFM_r * 1e6, np.sqrt(four_over_three_pi_rhow * np.power(efm_data[0] * 1e-6,3) * EFM_M), label="EFM") # std_dev of total mass of droplets of this size in the whole cell [kg]
 #  ax[0].plot(efm_data[0], efm_data[1] * EFM_dlogr / four_over_three_pi_rhow / np.power(efm_data[0] * 1e-6,3), label="EFM") # EFM data is mass density m(ln r) [kg/m3] with radius in microns; LCM data is m(r) with radius in meters
-
-print("total number of droplets in the cell in EFM at the end: ", np.sum(EFM_N[int(EFM_N.size/2):])) # EFM_N contains init spectrum and final spectrum
-print("total mass of droplets in the cell in EFM at the end: ", np.sum(EFM_M[int(EFM_M.size/2):]))
 
 #plt.title('Time at which largest droplet exceeds 3 mm radius and size of the droplet')
 ax[0].set_xlabel('radius [um]')
@@ -129,5 +124,5 @@ ax[1].set_ylim(1e-8,)
 
 plt.grid(axis='y', color='0.5')
 plt.legend()
-fig.savefig("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/img/DSD_t300.png")
+fig.savefig("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/img/DSD_t0.png")
 plt.show()
