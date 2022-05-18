@@ -29,5 +29,5 @@ for plot in plots:
   #plt.xlim([0, 800])
 
   
-  #plt.legend()
+  plt.legend()
   fig.savefig("/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/img/series/MarshallPalmer_R10_series_"+plot+".png")

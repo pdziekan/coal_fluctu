@@ -78,7 +78,7 @@ for pre in data_labels:
     rad = np.append(rad,float(row[3]))
     time = np.append(time,float(row[5]))
 #  print(time,rad)
-  ax.scatter(time,rad, label=data_labels[pre], color=data_colors[pre], s=3, alpha=0.3)
+  ax.scatter(time,rad, label=data_labels[pre], color=data_colors[pre], s=3, alpha=0.15)
   aggregated_time[data_colors[pre]] = np.append(aggregated_time[data_colors[pre]], time)
   aggregated_rad[data_colors[pre]] = np.append(aggregated_rad[data_colors[pre]], rad)
 
@@ -100,7 +100,7 @@ ax.set_xlabel('time [s]')
 ax.set_ylabel('radius [um]')
 
 plt.legend()
-fig.savefig("/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/img/stopr/Onishi_stopr_vs_cell_size_LCM.png")
+fig.savefig("/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/img/stopr/Onishi_stopr_vs_cell_size_LCM.pdf")
 #plt.show()
 #
 #

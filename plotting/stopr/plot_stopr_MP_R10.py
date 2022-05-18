@@ -4,17 +4,17 @@ import matplotlib.pyplot as plt
 data_labels = {}
 data_colors = {}
 
+directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/MarshallPalmer_R10/LCM/GA17_from_libcloudphxx/GA17_Np1_nx400_eps0.1_dt0.01var_MP_R10_HallDavis_cutoff2.5mm_stopr3mm_part"
+data_labels[directory+ "/"] = "LCM Np1e0 nx400 stopr3mm, var dt 0.1, GA17 libcloudphxx eps 0.1, Marshall-Palmer R10, HallDavis"
+data_labels[directory+ "/"] = "LCM multiple coalescence cells, each with 1 droplet on average"
+data_colors[directory+ "/"] = "blue"
+
 directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/MarshallPalmer_R10/LCM/zero_dim/GA17_Np64e6_nx1_dt3var_MP_R10_HallDavis_cutoff2.5mm_stopr3mm_0"
 data_labels[directory+ "/"] = "LCM Np64e6 nx1 stopr3mm, var dt 3, GA17 libcloudphxx eps 0.1, Marshall-Palmer R10, HallDavis"
 data_labels[directory+ "/"] = "LCM one large coalescence cell"
 data_colors[directory+ "/"] = "red"
 
 
-
-directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/MarshallPalmer_R10/LCM/GA17_from_libcloudphxx/GA17_Np1_nx400_eps0.1_dt0.01var_MP_R10_HallDavis_cutoff2.5mm_stopr3mm_part"
-data_labels[directory+ "/"] = "LCM Np1e0 nx400 stopr3mm, var dt 0.1, GA17 libcloudphxx eps 0.1, Marshall-Palmer R10, HallDavis"
-data_labels[directory+ "/"] = "LCM multiple coalescence cells, each with 1 droplet on average"
-data_colors[directory+ "/"] = "blue"
 
 
 fig, ax = plt.subplots(figsize=(12,9))
@@ -36,7 +36,7 @@ for pre in data_labels:
     rad = np.append(rad,float(row[3]))
     time = np.append(time,float(row[6]))
 #  print(time,rad)
-  ax.scatter(time,rad, label=data_labels[pre], color=data_colors[pre], s=3, alpha=0.3)
+  ax.scatter(time,rad, label=data_labels[pre], color=data_colors[pre], s=3, alpha=0.15)
   aggregated_time[data_colors[pre]] = np.append(aggregated_time[data_colors[pre]], time)
   aggregated_rad[data_colors[pre]] = np.append(aggregated_rad[data_colors[pre]], rad)
 
@@ -44,7 +44,7 @@ for pre in data_labels:
 for data_color in aggregated_time:
   time = aggregated_time[data_color]
   rad = aggregated_rad[data_color]
-  ax.errorbar(np.mean(time),np.mean(rad), xerr = np.std(time) / np.sqrt(len(time)), yerr = np.std(rad) / np.sqrt(len(rad)), color=data_color)
+  ax.errorbar(np.mean(time),np.mean(rad), xerr = np.std(time) / np.sqrt(len(time)), yerr = np.std(rad) / np.sqrt(len(rad)), color=data_color, elinewidth=1.5)
 
 #  for idx, (row_t, row_d) in enumerate(zip(all_time, all_data)):
 #    time = np.array(row_t, dtype=np.float32)
@@ -58,7 +58,7 @@ ax.set_xlabel('time [s]')
 ax.set_ylabel('radius [um]')
 
 plt.legend()
-fig.savefig("/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/img/stopr/MP_R10_stopr_vs_cell_size_LCM.png")
+fig.savefig("/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/img/stopr/MP_R10_stopr_vs_cell_size_LCM.pdf")
 #plt.show()
 #
 #
