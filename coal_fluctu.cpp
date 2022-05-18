@@ -824,14 +824,15 @@ int main(int argc, char *argv[]){
 
         // rain mass
         prtcls->diag_wet_rng(40e-6, 1); // rain water (like in Onishi)
-        prtcls->diag_wet_mom(3);
-        arr = prtcls->outbuf();
-        real_t rain_mass_tot = 0;
-        #pragma omp parallel for reduction(+ : rain_mass_tot)
-        for(int j=0; j<n_cell; ++j)
-          rain_mass_tot += arr[j];
-        // add removed particles (due to large r) to rain water mass
-        rain_mass_tot += init_tot_cloud_mass - (cloud_mass_tot + rain_mass_tot);
+        // includes removed particles (due to large r) to rain water mass
+        real_t rain_mass_tot = init_tot_rain_mass + init_tot_cloud_mass - cloud_mass_tot;
+//        prtcls->diag_wet_mom(3);
+//        arr = prtcls->outbuf();
+//        real_t rain_mass_tot = 0;
+//        #pragma omp parallel for reduction(+ : rain_mass_tot)
+//        for(int j=0; j<n_cell; ++j)
+//          rain_mass_tot += arr[j];
+//        rain_mass_tot += init_tot_cloud_mass - (cloud_mass_tot + rain_mass_tot);
 
         // rain conc
         prtcls->diag_wet_mom(0);
