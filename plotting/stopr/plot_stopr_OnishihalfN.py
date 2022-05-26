@@ -6,7 +6,7 @@ data_colors = {}
 
 directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/OnishihalfN/LCM/zero_dim/GA17_Np27e6_nx1_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300"
 data_labels[directory+ "/"] = "LCM Np27e6 nx1 stopr300, var dt 1, GA17 libcloudphxx eps 0.1, OnishihalfN, HallDavis"
-data_labels[directory+ "/"] = "LCM one large coalescence cell"
+data_labels[directory+ "/"] = "one large coalescence cell"
 data_colors[directory+ "/"] = "red"
 
 directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/OnishihalfN/LCM/zero_dim/GA17_Np27e6_nx1_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300_2"
@@ -33,7 +33,7 @@ data_colors[directory+ "/"] = "red"
 
 directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/OnishihalfN/LCM/GA17_from_libcloudphxx/GA17_Np1e0_nx300_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300"
 data_labels[directory+ "/"] = "LCM Np1e0 nx300 stopr300, var dt 1, GA17 libcloudphxx eps 0.1, OnishihalfN, HallDavis"
-data_labels[directory+ "/"] = "LCM multiple coalescence cells, each with 1 droplet on average"
+data_labels[directory+ "/"] = "multiple coalescence cells"
 data_colors[directory+ "/"] = "blue"
 
 directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/OnishihalfN/LCM/GA17_from_libcloudphxx/GA17_Np1e0_nx300_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300_2"
