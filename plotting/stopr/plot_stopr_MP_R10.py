@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 data_labels = {}
 data_colors = {}
 
-directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/MarshallPalmer_R10/LCM/GA17_from_libcloudphxx/GA17_Np1_nx400_eps0.1_dt0.01var_MP_R10_HallDavis_cutoff2.5mm_stopr3mm_part"
+directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/MarshallPalmer_R10/LCM/GA17_from_libcloudphxx/GA17_Np1_nx400_eps0.1_dt0.01var_MP_R10_HallDavis_cutoff2.5mm_stopr3mm"
 data_labels[directory+ "/"] = "LCM Np1e0 nx400 stopr3mm, var dt 0.1, GA17 libcloudphxx eps 0.1, Marshall-Palmer R10, HallDavis"
 data_labels[directory+ "/"] = "LCM multiple coalescence cells, each with 1 droplet on average"
 data_colors[directory+ "/"] = "blue"
@@ -44,7 +44,10 @@ for pre in data_labels:
 for data_color in aggregated_time:
   time = aggregated_time[data_color]
   rad = aggregated_rad[data_color]
-  ax.errorbar(np.mean(time),np.mean(rad), xerr = np.std(time) / np.sqrt(len(time)), yerr = np.std(rad) / np.sqrt(len(rad)), color=data_color, elinewidth=1.5)
+  # mean with mean square error
+#  ax.errorbar(np.mean(time),np.mean(rad), xerr = np.std(time) / np.sqrt(len(time)), yerr = np.std(rad) / np.sqrt(len(rad)), color=data_color)
+  # mean with 1 std dev 
+  ax.errorbar(np.mean(time),np.mean(rad), xerr = np.std(time) , yerr = np.std(rad) , color=data_color)
 
 #  for idx, (row_t, row_d) in enumerate(zip(all_time, all_data)):
 #    time = np.array(row_t, dtype=np.float32)

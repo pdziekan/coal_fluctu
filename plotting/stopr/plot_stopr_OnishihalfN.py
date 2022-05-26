@@ -86,7 +86,10 @@ for pre in data_labels:
 for data_color in aggregated_time:
   time = aggregated_time[data_color]
   rad = aggregated_rad[data_color]
-  ax.errorbar(np.mean(time),np.mean(rad), xerr = np.std(time) / np.sqrt(len(time)), yerr = np.std(rad) / np.sqrt(len(rad)), color=data_color)
+  # mean with mean square error
+#  ax.errorbar(np.mean(time),np.mean(rad), xerr = np.std(time) / np.sqrt(len(time)), yerr = np.std(rad) / np.sqrt(len(rad)), color=data_color)
+  # mean with 1 std dev 
+  ax.errorbar(np.mean(time),np.mean(rad), xerr = np.std(time) , yerr = np.std(rad) , color=data_color)
 
 #  for idx, (row_t, row_d) in enumerate(zip(all_time, all_data)):
 #    time = np.array(row_t, dtype=np.float32)
@@ -100,7 +103,7 @@ ax.set_xlabel('time [s]')
 ax.set_ylabel('radius [um]')
 
 plt.legend()
-fig.savefig("/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/img/stopr/Onishi_stopr_vs_cell_size_LCM.pdf")
+fig.savefig("/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/img/stopr/OnishihalfN_stopr_vs_cell_size_LCM.pdf")
 #plt.show()
 #
 #
