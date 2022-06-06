@@ -21,7 +21,7 @@ def plot_coal_series(plots, data, outname):
 
   # y axis labels
   y_lab = {}
-  y_lab["theta"] = "\\theta"
+  y_lab["tau"] = "\\theta"
   y_lab["nrain"] = "N_r"
   y_lab["rmax"] = "r_\mathrm{max}"
 
@@ -151,7 +151,7 @@ def plot_coal_series(plots, data, outname):
 
       axs[0].set_xticks([])
       axs[1].set_xlabel('time [s]')
-      axs[0].set_ylabel('$\langle '+y_lab[plot]+' \rangle$')
+      axs[0].set_ylabel('$<'+y_lab[plot]+'>$')
       axs[1].set_ylabel('$\sigma ('+y_lab[plot]+')$')
       plt.legend()
       fig.tight_layout()
