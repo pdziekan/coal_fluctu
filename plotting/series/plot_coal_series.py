@@ -5,6 +5,36 @@ from math import floor
 
 SE_scale = 1.96 # used to scale standard error, 1.96 gives 95% confidence interval
 
+labeldict = {
+ 0 : "(a)",
+ 1 : "(b)",
+ 2 : "(c)",
+ 3 : "(d)",
+ 4 : "(e)",
+ 5 : "(f)",
+ 6 : "(g)",
+ 7 : "(h)",
+ 8 : "(i)",
+ 9 : "(j)",
+ 10 : "(k)",
+ 11 : "(l)",
+}
+
+
+# y axis labels
+var_name = {}
+var_name["tau"] = "\\theta"
+var_name["nrain"] = "N_r"
+var_name["rmax"] = "r_\mathrm{max}"
+unit_name = {}
+unit_name["tau"] = ""
+unit_name["nrain"] = "\, [\mathrm{m}^{-3}]"
+unit_name["rmax"] = "\, [\mathrm{\mu m}]"
+
+# colors fom the default 
+prop_cycle = plt.rcParams['axes.prop_cycle']
+colors = prop_cycle.by_key()['color']
+
 def plot_coal_series(plot, data, fig, axs):
 #  plt.rcParams['text.usetex'] = True # latex labels
 #  fig, ax = plt.subplots(figsize=(12,9))
@@ -15,18 +45,9 @@ def plot_coal_series(plot, data, fig, axs):
     if label not in labels:
       labels.append(label)
 
-  # colors fom the default 
-  prop_cycle = plt.rcParams['axes.prop_cycle']
-  colors = prop_cycle.by_key()['color']
   color_lab = {}
   for i, lab in enumerate(labels):
     color_lab[lab] = colors[i]
-
-  # y axis labels
-  y_lab = {}
-  y_lab["tau"] = "\\theta"
-  y_lab["nrain"] = "N_r"
-  y_lab["rmax"] = "r_\mathrm{max}"
 
   
   #fig, ax = plt.subplots(figsize=(12,9))
@@ -161,9 +182,9 @@ def plot_coal_series(plot, data, fig, axs):
 #      print("mean time in bins:", bin_mean_time)
   
   #  plt.legend()
-    axs[0].set_ylabel('$<'+y_lab[plot]+'>$')
-    axs[1].set_ylabel('$\sigma ('+y_lab[plot]+')$')
-    plt.legend()
+    axs[0].set_ylabel('$<'+var_name[plot]+'>'+unit_name[plot]+'$')
+    axs[1].set_ylabel('$\sigma ('+var_name[plot]+')'+unit_name[plot]+'$')
+#    plt.legend()
 
 #    fig.savefig(outname+"_series_"+plot+"_stats_nbins_"+str(nbins)+".pdf")
  #   fig.savefig(outname+"_series_"+plot+"_stats_nbins_"+str(nbins)+".svg")
@@ -187,7 +208,7 @@ def plot_coal_series(plot, data, fig, axs):
 
 
 
-def plot_coal_series_diff(labelA, labelB, time, mean, mean_err, stddev, stddev_err, fig, axs):
+def plot_coal_series_diff(plot, labelA, subsA, labelB, subsB, time, mean, mean_err, stddev, stddev_err, subrange_first, fig, axs):
 #  print(time[labelA], time[labelB])
   avg_time = (time[labelA] + time[labelB]) / 2.
   #print("avg time:",avg_time)
@@ -205,15 +226,34 @@ def plot_coal_series_diff(labelA, labelB, time, mean, mean_err, stddev, stddev_e
   # /100 to get percent
   mean_scale = mean[labelA] / 100.
   stddev_scale = stddev[labelA] / 100.
-  mean_scale = 1
+#  mean_scale = 1
 #  stddev_scale = 1
 
   scaled_mean_diff       = np.where(mean_scale != 0, mean_diff / mean_scale, mean_diff)
   scaled_mean_diff_err   = np.where(mean_scale != 0, mean_diff_err / mean_scale, mean_diff_err)
   scaled_stddev_diff     = np.where(stddev_scale != 0, stddev_diff / stddev_scale, stddev_diff)
   scaled_stddev_diff_err = np.where(stddev_scale != 0, stddev_diff_err / stddev_scale, stddev_diff_err)
-  
-  axs[2].errorbar(avg_time, scaled_mean_diff, xerr = avg_time_err, yerr=SE_scale * scaled_mean_diff_err, ls='', marker='.', markersize=4)
-  axs[2].axhline(y=0., color='r', linestyle='--')
-  axs[3].errorbar(avg_time, scaled_stddev_diff, xerr = avg_time_err, yerr=SE_scale * scaled_stddev_diff_err, ls='', marker='.', markersize=4)
-  axs[3].axhline(y=0., color='r', linestyle='--')
+
+  avg_time_subrange    = avg_time[subrange_first:]
+  avg_time_err_subrange = avg_time_err[subrange_first:]
+  scaled_mean_diff_subrange    = scaled_mean_diff[subrange_first:]
+  scaled_mean_diff_err_subrange = scaled_mean_diff_err[subrange_first:]
+   
+  axs[2].errorbar(avg_time, mean_diff, xerr = avg_time_err, yerr=SE_scale * mean_diff_err, ls='', marker='.', markersize=4, color=colors[2])
+  axs[2].axhline(y=0., color='black', linestyle='--')
+  axs[2].set_ylabel('$<'+var_name[plot]+'>_\mathrm{'+ subsB + '} - <'+var_name[plot]+'>_\mathrm{' + subsA + '}'+unit_name[plot]+'$')
+
+  # dummy plot just to get automatic y range for part of the plot for which mean theta>1e-3
+  axs[3].errorbar(avg_time_subrange, scaled_mean_diff_subrange, xerr = avg_time_err_subrange, yerr=SE_scale * scaled_mean_diff_err_subrange)
+  axs[3].axhline(y=0., color='black', linestyle='--')
+  ylim = axs[3].get_ylim()
+  axs[3].clear()
+  # final plot with full xrange but yrange from the dummy plot
+  axs[3].set_ylim(ylim)
+  axs[3].errorbar(avg_time, scaled_mean_diff, xerr = avg_time_err, yerr=SE_scale * scaled_mean_diff_err, ls='', marker='.', markersize=4, color=colors[2])
+  axs[3].axhline(y=0., color='black', linestyle='--')
+  axs[3].set_ylabel('$\\dfrac{<'+var_name[plot]+'>_\mathrm{'+ subsB + '} - <'+var_name[plot]+'>_\mathrm{' + subsA + '}}{<'+var_name[plot]+'>_\mathrm{' + subsA + '}}\, [\%]$')
+
+  axs[4].errorbar(avg_time, scaled_stddev_diff, xerr = avg_time_err, yerr=SE_scale * scaled_stddev_diff_err, ls='', marker='.', markersize=4, color=colors[3])
+  axs[4].axhline(y=0., color='black', linestyle='--')
+  axs[4].set_ylabel('$\\dfrac{\sigma('+var_name[plot]+')_\mathrm{'+ subsB + '} - \sigma('+var_name[plot]+')_\mathrm{' + subsA + '}}{\sigma('+var_name[plot]+')_\mathrm{' + subsA + '}}\, [\%]$')
