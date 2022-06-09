@@ -24,7 +24,7 @@ data[directory + "_3/"] = "small coalescence cells"
 data[directory + "_4/"] = "small coalescence cells"
 data[directory + "_5/"] = "small coalescence cells"
 
-fig, axs = plt.subplots(5, 1, figsize=(6.3,11))
+fig, axs = plt.subplots(3, 2, figsize=(6.3,11))
 
 legend_loc = {}
 legend_loc["tau"] = "upper center"
@@ -47,15 +47,15 @@ for plot in plots:
 
   plot_coal_series_diff(plot, "small coalescence cells", "S", "large coalescence cells", "L", time, mean, mean_err, std_dev, std_dev_err, t_1prom_it, fig, axs)
 
-  axs[0].tick_params(labelbottom=False)    
-  axs[1].tick_params(labelbottom=False)    
-  axs[2].tick_params(labelbottom=False)    
-  axs[3].tick_params(labelbottom=False)    
+#  axs[0].tick_params(labelbottom=False)    
+#  axs[1].tick_params(labelbottom=False)    
+#  axs[2].tick_params(labelbottom=False)    
+#  axs[3].tick_params(labelbottom=False)    
 #  axs[0].set_xticks([])
-  axs[4].set_xlabel('time [s]')
+#  axs[4].set_xlabel('time [s]')
 
-  for i,ax in enumerate(axs):
-    ax.text(0.01, 0.9, labeldict[i], fontsize=10, transform=ax.transAxes)
+#  for i,ax in enumerate(axs):
+#    ax.text(0.01, 0.9, labeldict[i], fontsize=10, transform=ax.transAxes)
 
 
   dirname = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/img/series/OnishihalfN"
