@@ -2,6 +2,9 @@ from plot_coal_series import plot_coal_series, plot_coal_series_diff, labeldict
 import matplotlib.pyplot as plt
 import numpy as np
 
+# font setup
+plt.rcParams.update({'font.size': 8})
+
 plots = ["tau", "nrain", "rmax"]
 
 data = {}
@@ -21,7 +24,7 @@ data[directory + "_3/"] = "small coalescence cells"
 data[directory + "_4/"] = "small coalescence cells"
 data[directory + "_5/"] = "small coalescence cells"
 
-fig, axs = plt.subplots(5, 1, figsize=(6.3,12))
+fig, axs = plt.subplots(5, 1, figsize=(6.3,11))
 
 legend_loc = {}
 legend_loc["tau"] = "upper center"
@@ -52,7 +55,7 @@ for plot in plots:
   axs[4].set_xlabel('time [s]')
 
   for i,ax in enumerate(axs):
-    ax.text(0.03, 0.9, labeldict[i], fontsize=10, transform=ax.transAxes)
+    ax.text(0.01, 0.9, labeldict[i], fontsize=10, transform=ax.transAxes)
 
 
   dirname = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/img/series/OnishihalfN"
@@ -64,5 +67,6 @@ for plot in plots:
 
   fig.tight_layout(pad=2)
   fig.savefig(dirname+"_series_"+plot+"_stats.pdf")
+  fig.savefig(dirname+"_series_"+plot+"_stats.svg")
   for ax in axs:
     ax.clear()
