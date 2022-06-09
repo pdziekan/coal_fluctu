@@ -5,6 +5,9 @@ import numpy as np
 # font setup
 plt.rcParams.update({'font.size': 8})
 
+# dpi of raster output
+plt.rcParams.update({'savefig.dpi': 300})
+
 plots = ["tau", "nrain", "rmax"]
 
 data = {}
@@ -24,7 +27,7 @@ data[directory + "_3/"] = "small coalescence cells"
 data[directory + "_4/"] = "small coalescence cells"
 data[directory + "_5/"] = "small coalescence cells"
 
-fig, axs = plt.subplots(3, 2, figsize=(6.3,11))
+fig, axs = plt.subplots(3, 2, figsize=(8, 8))
 
 legend_loc = {}
 legend_loc["tau"] = "upper center"
@@ -47,26 +50,27 @@ for plot in plots:
 
   plot_coal_series_diff(plot, "small coalescence cells", "S", "large coalescence cells", "L", time, mean, mean_err, std_dev, std_dev_err, t_1prom_it, fig, axs)
 
-#  axs[0].tick_params(labelbottom=False)    
-#  axs[1].tick_params(labelbottom=False)    
-#  axs[2].tick_params(labelbottom=False)    
-#  axs[3].tick_params(labelbottom=False)    
+  axs[0,0].tick_params(labelbottom=False)    
+  axs[0,1].tick_params(labelbottom=False)    
+  axs[1,0].tick_params(labelbottom=False)    
+  axs[1,1].tick_params(labelbottom=False)    
 #  axs[0].set_xticks([])
-#  axs[4].set_xlabel('time [s]')
+  axs[2,0].set_xlabel('time [s]')
+  axs[2,1].set_xlabel('time [s]')
 
-#  for i,ax in enumerate(axs):
-#    ax.text(0.01, 0.9, labeldict[i], fontsize=10, transform=ax.transAxes)
+  for i,ax in enumerate(axs.flatten()):
+    ax.text(0.03, 0.9, labeldict[i], fontsize=10, transform=ax.transAxes)
 
 
   dirname = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/img/series/OnishihalfN"
 
-  handles, labels = axs[0].get_legend_handles_labels()
-  axs[0].legend(handles, labels, loc=legend_loc[plot])
-  axs[1].legend(handles, labels, loc=legend_loc[plot])
+  handles, labels = axs[0,0].get_legend_handles_labels()
+  axs[0,0].legend(handles, labels, loc=legend_loc[plot])
+  axs[0,1].legend(handles, labels, loc=legend_loc[plot])
  # fig.legend()
 
   fig.tight_layout(pad=2)
   fig.savefig(dirname+"_series_"+plot+"_stats.pdf")
   fig.savefig(dirname+"_series_"+plot+"_stats.svg")
-  for ax in axs:
+  for ax in axs.flatten():
     ax.clear()
