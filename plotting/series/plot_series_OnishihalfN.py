@@ -45,7 +45,7 @@ for plot in plots:
     # y scale of plots with relative differences starting with values from the moment there was 0.1% of rain
     t_1prom_it = np.argmax(m > 0.001) 
     t_1prom = time["small coalescence cells"][t_1prom_it]
-#    print("t_1prom:",t_1prom)
+    print("t_1prom:",t_1prom)
 #    print("t_1prom_it:",t_1prom_it)
 
   plot_coal_series_diff(plot, "small coalescence cells", "S", "large coalescence cells", "L", time, mean, mean_err, std_dev, std_dev_err, t_1prom_it, fig, axs)
