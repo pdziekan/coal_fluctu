@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 four_over_three_pi_rhow = 4./3. * np.pi * 1e3 # [kg/m3]
 volume = 0.451 # cell volume [m3]
 
-def plot_DSD(data_labels, fig, ax, time):
+def plot_DSD(data_labels, fig, ax, time, outname):
   for pre in data_labels:
     LCM_r         = np.zeros(0)
     LCM_m_r    = np.zeros(0)
@@ -74,8 +74,9 @@ def plot_DSD(data_labels, fig, ax, time):
     EFM_m_logr = EFM_m_logr[int(EFM_N.size/2):]
     EFM_m_logr_std_dev = EFM_m_logr_std_dev[int(EFM_N.size/2):]
 
-  ax[0].plot(EFM_r[:int(EFM_N.size/2)] * 1e6, EFM_m_logr * 1e3, label="EFM") # radius in [um], mass density in [g/m3 / unit(log[um])]
-  ax[1].plot(EFM_r[:int(EFM_N.size/2)] * 1e6, EFM_m_logr_std_dev * 1e3, label="EFM") # radius in [um], mass density in [g/m3 / unit(log[um])]
+  ax[0].plot(EFM_r[:int(EFM_N.size/2)] * 1e6, EFM_m_logr * 1e3, label="SCE") # radius in [um], mass density in [g/m3 / unit(log[um])]
+  if time > 0: # dont plot SCE initial std dev - it is zero...
+    ax[1].plot(EFM_r[:int(EFM_N.size/2)] * 1e6, EFM_m_logr_std_dev * 1e3, label="SCE estimate") # radius in [um], mass density in [g/m3 / unit(log[um])]
   
   # plot N (number of droplets in the bin)
   #ax[0].plot(EFM_r * 1e6, EFM_N, label='end ' + data_labels[pre])
@@ -98,13 +99,16 @@ def plot_DSD(data_labels, fig, ax, time):
   ax[0].set_yscale('log')
   ax[1].set_xscale('log')
   ax[1].set_yscale('log')
-  ax[0].set_ylim(1e-7,)
-  ax[1].set_ylim(1e-8,)
+  ax[0].set_xlim(1,1e3)
+  ax[1].set_xlim(1,1e3)
+  ax[0].set_ylim(1e-4,1e1)
+  ax[1].set_ylim(1e-6,1e1)
   
   #ax[0].set_xlim(40,)
   #ax[0].set_ylim(0,0.30)
   
   plt.grid(axis='y', color='0.5')
-  plt.legend()
-  fig.savefig("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/img/DSD_t"+str(time)+".svg")
-  plt.show()
+  ax[0].legend()
+  ax[1].legend()
+  fig.savefig("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/img/DSD_"+str(outname)+"_t"+str(time)+".svg")
+  #plt.show()
