@@ -248,12 +248,12 @@ def plot_coal_series_diff(plot, labelA, subsA, labelB, subsB, time, mean, mean_e
   axs.flatten()[3].set_ylabel('$\sigma('+var_name[plot]+')_\mathrm{'+ subsB + '} - \sigma('+var_name[plot]+')_\mathrm{' + subsA + '}'+unit_name[plot]+'$')
 
   # dummy plot just to get automatic y range for part of the plot for which mean theta>1e-3
-  axs.flatten()[4].errorbar(avg_time_subrange, scaled_mean_diff_subrange, xerr = avg_time_err_subrange, yerr=SE_scale * scaled_mean_diff_err_subrange)
-  axs.flatten()[4].axhline(y=0., color='black', linestyle='--')
-  ylim = axs.flatten()[4].get_ylim()
-  axs.flatten()[4].clear()
+#  axs.flatten()[4].errorbar(avg_time_subrange, scaled_mean_diff_subrange, xerr = avg_time_err_subrange, yerr=SE_scale * scaled_mean_diff_err_subrange)
+#  axs.flatten()[4].axhline(y=0., color='black', linestyle='--')
+#  ylim = axs.flatten()[4].get_ylim()
+#  axs.flatten()[4].clear()
+#  axs.flatten()[4].set_ylim(ylim)
   # final plot with full xrange but yrange from the dummy plot
-  axs.flatten()[4].set_ylim(ylim)
   axs.flatten()[4].errorbar(avg_time, scaled_mean_diff, xerr = avg_time_err, yerr=SE_scale * scaled_mean_diff_err, ls='', marker='.', markersize=4, color=colors[2])
   axs.flatten()[4].axhline(y=0., color='black', linestyle='--')
   axs.flatten()[4].set_ylabel('$\\dfrac{<'+var_name[plot]+'>_\mathrm{'+ subsB + '} - <'+var_name[plot]+'>_\mathrm{' + subsA + '}}{<'+var_name[plot]+'>_\mathrm{' + subsA + '}}\, [\%]$')
