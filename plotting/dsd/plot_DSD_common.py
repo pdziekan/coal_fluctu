@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 four_over_three_pi_rhow = 4./3. * np.pi * 1e3 # [kg/m3]
 volume = 0.451 # cell volume [m3]
 
-def plot_DSD(data_labels, fig, ax, time, outname):
+def plot_DSD(data_labels, data_colors, fig, ax, time, outname):
   for pre in data_labels:
     LCM_r         = np.zeros(0)
     LCM_m_r    = np.zeros(0)
@@ -32,8 +32,8 @@ def plot_DSD(data_labels, fig, ax, time, outname):
     print("total mass of droplets in the cell in LCM at the end: ", np.sum(LCM_M))
   
   # plot m(log r)
-    ax[0].plot(LCM_r * 1e6, LCM_m_logr, label= data_labels[pre])
-    ax[1].plot(LCM_r * 1e6, LCM_m_logr_std_dev, label= data_labels[pre])
+    ax[0].plot(LCM_r * 1e6, LCM_m_logr, color=data_colors[pre], label= data_labels[pre])
+    ax[1].plot(LCM_r * 1e6, LCM_m_logr_std_dev, color=data_colors[pre], label= data_labels[pre])
   # std dev scaled as sqrt(N_SD)
   #  ax[1].plot(LCM_r * 1e6, LCM_m_logr_std_dev  * np.sqrt(data_nsd[pre]) / np.sqrt(64e6), label='end ' + data_labels[pre])
   
@@ -74,9 +74,9 @@ def plot_DSD(data_labels, fig, ax, time, outname):
     EFM_m_logr = EFM_m_logr[int(EFM_N.size/2):]
     EFM_m_logr_std_dev = EFM_m_logr_std_dev[int(EFM_N.size/2):]
 
-  ax[0].plot(EFM_r[:int(EFM_N.size/2)] * 1e6, EFM_m_logr * 1e3, label="SCE") # radius in [um], mass density in [g/m3 / unit(log[um])]
+  ax[0].plot(EFM_r[:int(EFM_N.size/2)] * 1e6, EFM_m_logr * 1e3, ls='--', color='black', label="SCE") # radius in [um], mass density in [g/m3 / unit(log[um])]
   if time > 0: # dont plot SCE initial std dev - it is zero...
-    ax[1].plot(EFM_r[:int(EFM_N.size/2)] * 1e6, EFM_m_logr_std_dev * 1e3, label="SCE estimate") # radius in [um], mass density in [g/m3 / unit(log[um])]
+    ax[1].plot(EFM_r[:int(EFM_N.size/2)] * 1e6, EFM_m_logr_std_dev * 1e3, ls='--', color='black', label="SCE estimate") # radius in [um], mass density in [g/m3 / unit(log[um])]
   
   # plot N (number of droplets in the bin)
   #ax[0].plot(EFM_r * 1e6, EFM_N, label='end ' + data_labels[pre])
