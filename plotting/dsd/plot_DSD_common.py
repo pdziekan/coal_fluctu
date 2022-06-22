@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+SE_scale = 1. # used to scale standard error, 1.96 gives 95% confidence interval
 four_over_three_pi_rhow = 4./3. * np.pi * 1e3 # [kg/m3]
 volume = 0.451 # cell volume [m3]
 
@@ -49,15 +50,24 @@ def read_DSD(pre, time):
     vterm_r[i] = beard77(r)
   LCM_m_logr_times_vterm = LCM_m_logr * vterm_r
 
-  LCM_m_logr_err = 0
+  # read ensemble size
+  LCM_ens = 0
+  fs = open(pre+"setup.dat","r")
+  rows = [x.split() for x in fs.readlines()]
+  for row in rows:
+    if row[0] == "n_rep":
+      LCM_ens = float(row[2])
 
-  return(LCM_r, LCM_m_logr, LCM_m_logr_std_dev, LCM_m_logr_times_vterm, LCM_m_logr_err)
+  # calculate error of the mean
+  LCM_m_logr_err = LCM_m_logr_std_dev / np.sqrt(LCM_ens)
+
+  return(LCM_r, LCM_m_logr, LCM_m_logr_std_dev, LCM_m_logr_times_vterm, LCM_m_logr_err, vterm_r)
 
 
 
 def plot_DSD(data_labels, data_colors, fig, ax, time, outname):
   for pre in data_labels:
-    LCM_r, LCM_m_logr, LCM_m_logr_std_dev, LCM_m_logr_times_vterm, LCM_m_logr_err = read_DSD(pre, time)
+    LCM_r, LCM_m_logr, LCM_m_logr_std_dev, LCM_m_logr_times_vterm, LCM_m_logr_err, vterm_r = read_DSD(pre, time)
     LCM_dlogr = np.log(LCM_r[1]) - np.log(LCM_r[0]) # [log(um)]
     LCM_M = LCM_m_logr * LCM_dlogr * volume * 1e-3 # mass of droplets of this size in the cell [kg]
     LCM_N = LCM_M / four_over_three_pi_rhow / np.power(LCM_r,3) # number of droplets of this size in the cell [1]
@@ -154,24 +164,27 @@ def plot_DSD_diff(data_labels, data_colors, ref_label, time, outname):
   pre_ref = key_list[val_list.index(ref_label)]
 
   # read reference data
-  LCM_r, LCM_m_logr_ref, LCM_m_logr_std_dev_ref, LCM_m_logr_times_vterm_ref, LCM_m_logr_err_ref = read_DSD(pre_ref, time)
+  LCM_r, LCM_m_logr_ref, LCM_m_logr_std_dev_ref, LCM_m_logr_times_vterm_ref, LCM_m_logr_err_ref, vterm_r = read_DSD(pre_ref, time)
 
   # plot diff from reference data
   for pre in data_labels:
     if pre == pre_ref:
       continue
 
-    LCM_r, LCM_m_logr, LCM_m_logr_std_dev, LCM_m_logr_times_vterm, LCM_m_logr_err = read_DSD(pre, time)
-    plt.plot(LCM_r * 1e6, LCM_m_logr_times_vterm - LCM_m_logr_times_vterm_ref, color=data_colors[pre], label= data_labels[pre])
-#    plt.errorbar(LCM_r * 1e6, LCM_m_logr_times_vterm - LCM_m_logr_times_vterm_ref, yerr =  color=data_colors[pre], label= data_labels[pre])
+    LCM_r, LCM_m_logr, LCM_m_logr_std_dev, LCM_m_logr_times_vterm, LCM_m_logr_err, vterm_r = read_DSD(pre, time)
+
+    LCM_m_logr_diff_err = np.sqrt(pow(LCM_m_logr_err,2) + pow(LCM_m_logr_err_ref,2))
+    LCM_m_logr_times_vterm_diff_err = LCM_m_logr_diff_err * vterm_r # assume vterm has no error 
+#    plt.plot(LCM_r * 1e6, LCM_m_logr_times_vterm - LCM_m_logr_times_vterm_ref, color=data_colors[pre], label= data_labels[pre])
+    plt.errorbar(LCM_r * 1e6, LCM_m_logr_times_vterm - LCM_m_logr_times_vterm_ref, yerr = SE_scale * LCM_m_logr_times_vterm_diff_err, color=data_colors[pre], label= data_labels[pre])
 
 #    plt.plot(LCM_r * 1e6, LCM_m_logr - LCM_m_logr_ref, color=data_colors[pre], label= data_labels[pre])
   
-  plt.xlabel('radius [um]')
-  plt.ylabel('$<m(log r)> v_\mathrm{t}\, [g/m^3 * m/s / unit(log[um])]$')
+  plt.xlabel('$r\ [\mathrm{\mu m}]$')
+  plt.ylabel('$(<m>_\mathrm{SD} - <m>_\mathrm{0})\ v_\mathrm{t}\ \ [\mathrm{g/m^3 * m/s \ / \ unit(log[um])}]$')
   plt.xscale('log')
 #  plt.yscale('symlog', linthresh=1e-3)
-  plt.xlim(1,1e3)
+  plt.xlim(7,3e2)
   plt.ylim()
   plt.grid(axis='y', color='0.5')
   plt.legend()

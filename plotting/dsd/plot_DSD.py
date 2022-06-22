@@ -76,7 +76,13 @@ plot_DSD(data_labels, data_color, fig, ax, 300, "NSD")
 fig, ax = plt.subplots(1, 2, figsize=(24,9))
 plot_DSD(data_labels, data_color, fig, ax, 0, "NSD")
 
+# roznica SD wzgledem one-to-one
 plt.clf()
+data_labels = {}
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300/"] =     "one-to-one"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e5Tail_Ens100_T300/"] =  "SD 1e5 tail"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] =  "SD 1e2 tail"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e4_T300/"] =  "SD 1e1 tail"
 plot_DSD_diff(data_labels, data_color, "one-to-one", 300, "NSD")
 
 
