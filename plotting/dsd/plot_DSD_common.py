@@ -4,28 +4,61 @@ import matplotlib.pyplot as plt
 four_over_three_pi_rhow = 4./3. * np.pi * 1e3 # [kg/m3]
 volume = 0.451 # cell volume [m3]
 
+# terminal fall velocity at sea level according to Beard (1977)
+def beard77(r): # r - radius [m]
+  # use 3rd degree polynominal for r<20um 
+  m_s = [0.105035e2, 0.108750e1, -0.133245, -0.659969e-2]
+  # use 7th degree polynominal for r>20um
+  m_l = [0.65639e1,    -0.10391e1,    -0.14001e1,    -0.82736e0,    -0.34277e0,    -0.83072e-1,    -0.10583e-1,    -0.54208e-3]
+
+  x = np.log(2.*100.*(r))
+  y = 0;
+  # calc V0 (sea-level velocity)
+  if(r <= 20e-6):
+    for i in np.arange(4): 
+      y += m_s[i] * pow(x, i);
+  else:
+    for i in np.arange(8): 
+      y += m_l[i] * pow(x, i);
+
+  return np.exp(y) / 100. # [m/s]
+
+def read_DSD(pre, time):
+  LCM_r      = np.zeros(0)
+  LCM_m_r    = np.zeros(0)
+  LCM_m_r_std_dev  = np.zeros(0)
+  
+  fs = open(pre+"size_spectr_mean.dat","r")
+  rows = [x.split() for x in fs.readlines()]
+  for row in rows[1:]: # first row is data description
+    LCM_r              = np.append(LCM_r,            float(row[0])) # [um]
+    if time == 0:
+      LCM_m_r          = np.append(LCM_m_r,          float(row[1])) # same
+      LCM_m_r_std_dev  = np.append(LCM_m_r_std_dev,  float(row[2])) # same
+    else:
+      LCM_m_r          = np.append(LCM_m_r,          float(row[3])) # same
+      LCM_m_r_std_dev  = np.append(LCM_m_r_std_dev,  float(row[4])) # same
+  
+  LCM_r *= 1e-6 # [m]
+  
+  LCM_m_logr = LCM_m_r * LCM_r # [g/m3 / unit(log[um])] 
+  LCM_m_logr_std_dev = LCM_m_r_std_dev * LCM_r # [g/m3 / unit(log[um])] 
+
+  vterm_r = np.zeros(len(LCM_r))
+  for i,r in enumerate(LCM_r):
+    vterm_r[i] = beard77(r)
+  LCM_m_logr_times_vterm = LCM_m_logr * vterm_r
+
+  LCM_m_logr_err = 0
+
+  return(LCM_r, LCM_m_logr, LCM_m_logr_std_dev, LCM_m_logr_times_vterm, LCM_m_logr_err)
+
+
+
 def plot_DSD(data_labels, data_colors, fig, ax, time, outname):
   for pre in data_labels:
-    LCM_r         = np.zeros(0)
-    LCM_m_r    = np.zeros(0)
-    LCM_m_r_std_dev  = np.zeros(0)
-  
-    fs = open(pre+"size_spectr_mean.dat","r")
-    rows = [x.split() for x in fs.readlines()]
-    for row in rows[1:]: # first row is data description
-      LCM_r                = np.append(LCM_r,                float(row[0])) # [um]
-      if time == 0:
-        LCM_m_r          = np.append(LCM_m_r,          float(row[1])) # same
-        LCM_m_r_std_dev  = np.append(LCM_m_r_std_dev,  float(row[2])) # same
-      else:
-        LCM_m_r          = np.append(LCM_m_r,          float(row[3])) # same
-        LCM_m_r_std_dev  = np.append(LCM_m_r_std_dev,  float(row[4])) # same
-  
+    LCM_r, LCM_m_logr, LCM_m_logr_std_dev, LCM_m_logr_times_vterm, LCM_m_logr_err = read_DSD(pre, time)
     LCM_dlogr = np.log(LCM_r[1]) - np.log(LCM_r[0]) # [log(um)]
-    LCM_r *= 1e-6 # [m]
-  
-    LCM_m_logr = LCM_m_r * LCM_r # [g/m3 / unit(log[um])] 
-    LCM_m_logr_std_dev = LCM_m_r_std_dev * LCM_r # [g/m3 / unit(log[um])] 
     LCM_M = LCM_m_logr * LCM_dlogr * volume * 1e-3 # mass of droplets of this size in the cell [kg]
     LCM_N = LCM_M / four_over_three_pi_rhow / np.power(LCM_r,3) # number of droplets of this size in the cell [1]
     print("total number of droplets in the cell in LCM at the end: ", np.sum(LCM_N))
@@ -43,7 +76,6 @@ def plot_DSD(data_labels, data_colors, fig, ax, time, outname):
   
   # plot N (number of droplets in the bin)
   #  ax[0].plot(LCM_r * 1e6, LCM_N, label='end ' + data_labels[pre])
-    
   
   #  ax[0].plot(LCM_r, LCM_m_r, label='init ' + data_labels[pre]) # LCM data is mass density m(r) with LCM_rius in meters
   #  ax[1].plot(LCM_r, LCM_m_r_std_dev, label='init ' + data_labels[pre])
@@ -89,11 +121,13 @@ def plot_DSD(data_labels, data_colors, fig, ax, time, outname):
   print("total mass of droplets in the cell in EFM at the end: ", np.sum(EFM_M[int(EFM_M.size/2):]))
   
   #plt.title('Time at which largest droplet exceeds 3 mm radius and size of the droplet')
-  ax[0].set_xlabel('radius [um]')
-  ax[1].set_xlabel('radius [um]')
+  ax[0].set_xlabel('$r\ [\mathrm{\mu m}]$')
+  ax[1].set_xlabel('$r\ [\mathrm{\mu m}]$')
   #ax[0].set_ylabel('mean mass density m(r) [g/m^3 / m]')
-  ax[0].set_ylabel('mean mass density m(log r) [g/m^3 / unit(log[um])')
-  ax[1].set_ylabel('standard deviation of mass density m(log r) [g/m^3 / unit(log[um])')
+#  ax[0].set_ylabel('mean mass density m(log r) [g/m^3 / unit(log[um])')
+  ax[0].set_ylabel('$<m>\ [\mathrm{g/m^3 \ / \ unit(log[\mu m])}]$')
+  ax[1].set_ylabel('$\sigma(m)\ [\mathrm{g/m^3 \ / \ unit(log[\mu m])}]$')
+#  ax[1].set_ylabel('standard deviation of mass density m(log r) [g/m^3 / unit(log[um])')
   
   ax[0].set_xscale('log')
   ax[0].set_yscale('log')
@@ -112,3 +146,33 @@ def plot_DSD(data_labels, data_colors, fig, ax, time, outname):
   ax[1].legend()
   fig.savefig("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/img/DSD_"+str(outname)+"_t"+str(time)+".svg")
   #plt.show()
+
+
+def plot_DSD_diff(data_labels, data_colors, ref_label, time, outname):
+  key_list = list(data_labels.keys())
+  val_list = list(data_labels.values())
+  pre_ref = key_list[val_list.index(ref_label)]
+
+  # read reference data
+  LCM_r, LCM_m_logr_ref, LCM_m_logr_std_dev_ref, LCM_m_logr_times_vterm_ref, LCM_m_logr_err_ref = read_DSD(pre_ref, time)
+
+  # plot diff from reference data
+  for pre in data_labels:
+    if pre == pre_ref:
+      continue
+
+    LCM_r, LCM_m_logr, LCM_m_logr_std_dev, LCM_m_logr_times_vterm, LCM_m_logr_err = read_DSD(pre, time)
+    plt.plot(LCM_r * 1e6, LCM_m_logr_times_vterm - LCM_m_logr_times_vterm_ref, color=data_colors[pre], label= data_labels[pre])
+#    plt.errorbar(LCM_r * 1e6, LCM_m_logr_times_vterm - LCM_m_logr_times_vterm_ref, yerr =  color=data_colors[pre], label= data_labels[pre])
+
+#    plt.plot(LCM_r * 1e6, LCM_m_logr - LCM_m_logr_ref, color=data_colors[pre], label= data_labels[pre])
+  
+  plt.xlabel('radius [um]')
+  plt.ylabel('$<m(log r)> v_\mathrm{t}\, [g/m^3 * m/s / unit(log[um])]$')
+  plt.xscale('log')
+#  plt.yscale('symlog', linthresh=1e-3)
+  plt.xlim(1,1e3)
+  plt.ylim()
+  plt.grid(axis='y', color='0.5')
+  plt.legend()
+  plt.savefig("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/img/DSD_diff_"+str(outname)+"_t"+str(time)+".svg")
