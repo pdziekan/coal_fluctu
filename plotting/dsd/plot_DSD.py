@@ -26,44 +26,43 @@ directory_base = "/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/data/LC
 #data_nsd[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] = 1e2
 #data_nsd[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e4_T300/"] = 1e1
 
+available_datasets = [
+#directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens100_T300/",
+directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e3_T300/",
+directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal10_Onishi_SdConc1e3Tail_Ens100_T300/",
+directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300/",
+directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300_RngSeedInit44/",
+directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/",
+directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300_RngSeedInit44/",
+directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e5Tail_Ens100_T300/",
+#directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e4Tail_Ens100_T300/",
+directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e4Tail_Ens1e2_T300/",
+directory_base + "GA17_Np64e6_nx1_dt0.01_SstpCoal1_Onishi_SdConc1e3Tail_Ens100_T300/",
+#directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e4_T300/",
+directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T300/",
+directory_base + "GA17_Np64e6_nx1_dt1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"
+]
+
+linestyles = ['-', '--']
 # colors fom the default
 prop_cycle = plt.rcParams['axes.prop_cycle']
 colors = prop_cycle.by_key()['color']
-i = 0
 data_color = {}
-data_color[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens100_T300/"]               = colors[i] 
-i = i+1
-data_color[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal10_Onishi_SdConc1e3Tail_Ens100_T300/"]              = colors[i]
-i = i+1
-data_color[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300/"]                  = colors[i]
-i = i+1
-data_color[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300_RngSeedInit44/"]    = colors[i]
-i = i+1
-data_color[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"]               = colors[i]
-i = i+1
-data_color[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300_RngSeedInit44/"] = colors[i]
-i = i+1
-data_color[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e5Tail_Ens100_T300/"]               = colors[i]
-i = i+1
-data_color[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e4Tail_Ens100_T300/"]               = colors[i]
-i = i+1
-data_color[directory_base + "GA17_Np64e6_nx1_dt0.01_SstpCoal1_Onishi_SdConc1e3Tail_Ens100_T300/"]              = colors[i]
-i = i+1
-data_color[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e4_T300/"]               = colors[i]
-i = i+1
-data_color[directory_base + "GA17_Np64e6_nx1_dt1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"]               = colors[i]
-
+data_ls = {}
+for i,ds in enumerate(available_datasets):
+  data_color[ds] = colors[i % len(colors)] 
+  data_ls[ds] = linestyles[int(i/len(colors))]
 
 # nie ma roznic miedzy tymi trzema, dt i sstp_coal nie maja wplywu
 data_labels = {}
 #data_labels[directory_base + "GA17_Np64e6_nx1_dt0.01_SstpCoal1_Onishi_SdConc1e3Tail_Ens100_T300/"] = "DT 0.01 SstpCoal1  Sd1e3Tail"
-data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens100_T300/"]  = "const SD, $N_\mathrm{SD}=1e3$, large tail init, $\Delta t = 0.1\ \mathrm{s}$"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e3_T300/"]  = "const SD, $N_\mathrm{SD}=1e3$, large tail init, $\Delta t = 0.1\ \mathrm{s}$"
 data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal10_Onishi_SdConc1e3Tail_Ens100_T300/"] = "const SD, $N_\mathrm{SD}=1e3$, large tail init, $\Delta t = 0.01\ \mathrm{s}$"
 data_labels[directory_base + "GA17_Np64e6_nx1_dt1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] = "const SD, $N_\mathrm{SD}=1e2$, large tail init, $\Delta t = 1\ \mathrm{s}$"
 data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] = "const SD, $N_\mathrm{SD}=1e2$, large tail init, $\Delta t = 0.1\ \mathrm{s}$"
 
 fig, ax = plt.subplots(1, 2, figsize=(8,4))
-plot_DSD(data_labels, data_color, False, fig, ax, 300)
+plot_DSD(data_labels, data_color, data_ls, False, fig, ax, 300)
 #single legend for the whole figure
 handles, labels = ax[0].get_legend_handles_labels()
 lgd = fig.legend(handles, labels, handlelength=4, loc='lower center', bbox_to_anchor=(0.475,0))
@@ -86,8 +85,8 @@ data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Ta
 data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300_RngSeedInit44/"] = "const SD, $N_\mathrm{SD}=1e2$, large tail init, no randomness in initial DSD"
 
 fig, ax = plt.subplots(2, 2, figsize=(8,8))
-plot_DSD(data_labels, data_color, False, fig, ax[0], 0)
-plot_DSD(data_labels, data_color, False, fig, ax[1], 300)
+plot_DSD(data_labels, data_color, data_ls, False, fig, ax[0], 0)
+plot_DSD(data_labels, data_color, data_ls, False, fig, ax[1], 300)
 ax[0,0].set_xlabel('')
 ax[0,1].set_xlabel('')
 ax[0,0].set_title('$t=0\ s$')
@@ -109,15 +108,15 @@ fig.savefig("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/img/DSD_init
 data_labels = {}
 data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300/"] =     "one-to-one"
 data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e5Tail_Ens100_T300/"] =  "const SD, $N_\mathrm{SD}=1e5$, large tail init"
-data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e4Tail_Ens100_T300/"] =  "const SD, $N_\mathrm{SD}=1e4$, large tail init"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e4Tail_Ens1e2_T300/"] =  "const SD, $N_\mathrm{SD}=1e4$, large tail init"
 data_labels[directory_base + "GA17_Np64e6_nx1_dt0.01_SstpCoal1_Onishi_SdConc1e3Tail_Ens100_T300/"] = "const SD, $N_\mathrm{SD}=1e3$, large tail init"
 data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] =  "const SD, $N_\mathrm{SD}=1e2$, large tail init"
-data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e4_T300/"] =  "const SD, $N_\mathrm{SD}=1e1$, large tail init"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T300/"] =  "const SD, $N_\mathrm{SD}=1e1$, large tail init"
 
 
 fig, ax = plt.subplots(2, 2, figsize=(8,8))
-plot_DSD(data_labels, data_color, True, fig, ax[0], 0)
-plot_DSD(data_labels, data_color, True, fig, ax[1], 300)
+plot_DSD(data_labels, data_color, data_ls, True, fig, ax[0], 0)
+plot_DSD(data_labels, data_color, data_ls, True, fig, ax[1], 300)
 ax[0,0].set_xlabel('')
 ax[0,1].set_xlabel('')
 ax[0,0].set_title('$t=0\ s$')
@@ -139,5 +138,5 @@ data_labels = {}
 data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300/"] =     "one-to-one"
 data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e5Tail_Ens100_T300/"] =  "SD 1e5 tail"
 data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] =  "SD 1e2 tail"
-data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e4_T300/"] =  "SD 1e1 tail"
-plot_DSD_diff(data_labels, data_color, "one-to-one", 300, "NSD")
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T300/"] =  "SD 1e1 tail"
+plot_DSD_diff(data_labels, data_color, data_ls, "one-to-one", 300, "NSD")

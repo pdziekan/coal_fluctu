@@ -65,7 +65,7 @@ def read_DSD(pre, time):
 
 
 
-def plot_DSD(data_labels, data_colors, EFM_flag, fig, ax, time):
+def plot_DSD(data_labels, data_colors, data_ls, EFM_flag, fig, ax, time):
   for pre in data_labels:
     LCM_r, LCM_m_logr, LCM_m_logr_std_dev, LCM_m_logr_times_vterm, LCM_m_logr_err, vterm_r = read_DSD(pre, time)
     LCM_dlogr = np.log(LCM_r[1]) - np.log(LCM_r[0]) # [log(um)]
@@ -75,8 +75,8 @@ def plot_DSD(data_labels, data_colors, EFM_flag, fig, ax, time):
     print("total mass of droplets in the cell in LCM at the end: ", np.sum(LCM_M))
   
   # plot m(log r)
-    ax[0].plot(LCM_r * 1e6, LCM_m_logr, color=data_colors[pre], label= data_labels[pre])
-    ax[1].plot(LCM_r * 1e6, LCM_m_logr_std_dev, color=data_colors[pre], label= data_labels[pre])
+    ax[0].plot(LCM_r * 1e6, LCM_m_logr, color=data_colors[pre], ls=data_ls[pre], label= data_labels[pre])
+    ax[1].plot(LCM_r * 1e6, LCM_m_logr_std_dev, color=data_colors[pre], ls=data_ls[pre], label= data_labels[pre])
   # std dev scaled as sqrt(N_SD)
   #  ax[1].plot(LCM_r * 1e6, LCM_m_logr_std_dev  * np.sqrt(data_nsd[pre]) / np.sqrt(64e6), label='end ' + data_labels[pre])
   
@@ -159,7 +159,7 @@ def plot_DSD(data_labels, data_colors, EFM_flag, fig, ax, time):
   #plt.show()
 
 
-def plot_DSD_diff(data_labels, data_colors, ref_label, time, outname):
+def plot_DSD_diff(data_labels, data_colors, data_ls, ref_label, time, outname):
   fig, ax = plt.subplots(figsize=(8,8))
 
   key_list = list(data_labels.keys())
@@ -179,7 +179,7 @@ def plot_DSD_diff(data_labels, data_colors, ref_label, time, outname):
     LCM_m_logr_diff_err = np.sqrt(pow(LCM_m_logr_err,2) + pow(LCM_m_logr_err_ref,2))
     LCM_m_logr_times_vterm_diff_err = LCM_m_logr_diff_err * vterm_r # assume vterm has no error 
 #    plt.plot(LCM_r * 1e6, LCM_m_logr_times_vterm - LCM_m_logr_times_vterm_ref, color=data_colors[pre], label= data_labels[pre])
-    ax.errorbar(LCM_r * 1e6, LCM_m_logr_times_vterm - LCM_m_logr_times_vterm_ref, yerr = SE_scale * LCM_m_logr_times_vterm_diff_err, color=data_colors[pre], label= data_labels[pre])
+    ax.errorbar(LCM_r * 1e6, LCM_m_logr_times_vterm - LCM_m_logr_times_vterm_ref, yerr = SE_scale * LCM_m_logr_times_vterm_diff_err, color=data_colors[pre], ls=data_ls[pre], label= data_labels[pre])
 
 #    plt.plot(LCM_r * 1e6, LCM_m_logr - LCM_m_logr_ref, color=data_colors[pre], label= data_labels[pre])
   ax.axhline(y=0., color='grey', linestyle='dotted')
