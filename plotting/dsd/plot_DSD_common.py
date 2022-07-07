@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-SE_scale = 1. # used to scale standard error, 1.96 gives 95% confidence interval
+SE_scale = 1.96 # used to scale standard error, 1.96 gives 95% confidence interval
 four_over_three_pi_rhow = 4./3. * np.pi * 1e3 # [kg/m3]
 volume = 0.451 # cell volume [m3]
 
