@@ -18,24 +18,27 @@ data[directory + "_2/"] = "nx300"
 data[directory + "_3/"] = "nx300"
 data[directory + "_4/"] = "nx300"
 data[directory + "_5/"] = "nx300"
+#
+#directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/OnishihalfN/LCM/GA17_from_libcloudphxx/nx30/GA17_Np1e3_nx30_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300"
+#data[directory + "_part/"]   = "nx30"
+#data[directory + "_2_part/"] = "nx30"
+#
+#directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/OnishihalfN/LCM/GA17_from_libcloudphxx/nx3/GA17_Np1e6_nx3_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300"
+#data[directory + "/"]   = "nx3"
+#data[directory + "_2/"] = "nx3"
+#data[directory + "_3/"] = "nx3"
+#data[directory + "_4/"] = "nx3"
 
-directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/OnishihalfN/LCM/GA17_from_libcloudphxx/nx30/GA17_Np1e3_nx30_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300"
-data[directory + "_part/"]   = "nx30"
-data[directory + "_2_part/"] = "nx30"
-
-directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/OnishihalfN/LCM/GA17_from_libcloudphxx/nx3/GA17_Np1e6_nx3_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300"
-data[directory + "/"]   = "nx3"
-data[directory + "_2/"] = "nx3"
-data[directory + "_3/"] = "nx3"
-data[directory + "_4/"] = "nx3"
-
-directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/OnishihalfN/LCM/zero_dim/GA17_Np27e6_nx1_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300"
+#directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/OnishihalfN/LCM/zero_dim/GA17_Np27e6_nx1_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300"
 # same labels means that binned statistics will be calculated from all these simulations
 #data[directory + "/"]   = "nx1" # this set has strange dip in std dev of nrain at around 600 s; it differs in that it has sedi=1, but that doesnt matter
-data[directory + "_2/"] = "nx1"
-data[directory + "_3/"] = "nx1"
-data[directory + "_4/"] = "nx1"
-data[directory + "_5/"] = "nx1"
+#data[directory + "_2/"] = "nx1 a"
+#data[directory + "_3/"] = "nx1 b"
+#data[directory + "_4/"] = "nx1 c"
+#data[directory + "_5/"] = "nx1 d"
+
+directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/OnishihalfN/LCM/zero_dim/ares/GA17_Np27e6_nx1_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300"
+data[directory + "/"] = "nx1 ares"
 
 #fig, axs = plt.subplots(3, 2, figsize=(8, 8))
 fig, axs = plt.subplots(3, 2, figsize=(8, 8))

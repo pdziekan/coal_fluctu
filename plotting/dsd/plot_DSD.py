@@ -1,7 +1,6 @@
 # co sie liczy na cuda-k-4:
 # GA17_Np64e6_nx1_dt0.01_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T300/
 # GA17_Np64e6_nx1_dt0.01_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300
-# GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e4Tail_Ens1e3_T300
 
 from plot_DSD_common import plot_DSD, plot_DSD_diff
 import matplotlib.pyplot as plt
@@ -23,15 +22,9 @@ labeldict = {
 
 directory_base = "/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/data/LCM/Onishi/"
 
-#data_nsd = {}
-#data_nsd[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300/"] = 64e6
-#data_nsd[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e5Tail_Ens100_T300/"] = 1e5
-#data_nsd[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e4Tail_Ens100_T300/"] = 1e4
-#data_nsd[directory_base + "GA17_Np64e6_nx1_dt0.01_SstpCoal1_Onishi_SdConc1e3Tail_Ens100_T300/"] = 1e3
-#data_nsd[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] = 1e2
-#data_nsd[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e4_T300/"] = 1e1
-
 available_datasets = [
+
+# const multi
 directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300/",
 directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300_RngSeedInit44/",
 
@@ -41,12 +34,13 @@ directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e5Tail_Ens100_T3
 #directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e4Tail_Ens1e2_T300/",
 directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e4Tail_Ens1e3_T300/",
 
-directory_base + "GA17_Np64e6_nx1_dt0.01_SstpCoal1_Onishi_SdConc1e3Tail_Ens100_T300/",
+#directory_base + "GA17_Np64e6_nx1_dt0.01_SstpCoal1_Onishi_SdConc1e3Tail_Ens100_T300/",
+directory_base + "GA17_Np64e6_nx1_dt0.01_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/",
 #directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens100_T300/",
-directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal10_Onishi_SdConc1e3Tail_Ens100_T300/",
+#directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal10_Onishi_SdConc1e3Tail_Ens100_T300/",
 #directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e3_T300/",
-directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/",
 #directory_base + "GA17_Np64e6_nx1_dt1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e3_T300/",
+directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/",
 directory_base + "GA17_Np64e6_nx1_dt1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/",
 #directory_base + "GA17_Np64e6_nx1_dt10_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e3_T300/",
 directory_base + "GA17_Np64e6_nx1_dt10_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/",
@@ -57,37 +51,120 @@ directory_base + "GA17_Np64e6_nx1_dt1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300
 directory_base + "GA17_Np64e6_nx1_dt10_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/",
 directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300_RngSeedInit44/",
 
-#directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e4_T300/",
+directory_base + "GA17_Np64e6_nx1_dt0.01_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T300/",
 directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T300/",
+#directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e4_T300/",
 directory_base + "GA17_Np64e6_nx1_dt1_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T300/",
 directory_base + "GA17_Np64e6_nx1_dt10_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T300/",
 ]
 
-linestyles = ['-', '--']
+
+data_nsd = {}
+data_nsd[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300/"] = 64e6
+data_nsd[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300_RngSeedInit44/"] = 64e6
+data_nsd[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e5Tail_Ens100_T300/"] = 1e5
+data_nsd[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e4Tail_Ens1e3_T300/"] = 1e4
+data_nsd[directory_base + "GA17_Np64e6_nx1_dt0.01_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"] = 1e3
+data_nsd[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"] = 1e3
+data_nsd[directory_base + "GA17_Np64e6_nx1_dt1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"] = 1e3
+data_nsd[directory_base + "GA17_Np64e6_nx1_dt10_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"] = 1e3
+data_nsd[directory_base + "GA17_Np64e6_nx1_dt0.01_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] = 1e2
+data_nsd[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] = 1e2
+data_nsd[directory_base + "GA17_Np64e6_nx1_dt1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] = 1e2
+data_nsd[directory_base + "GA17_Np64e6_nx1_dt10_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] = 1e2
+data_nsd[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300_RngSeedInit44/"] = 1e2
+data_nsd[directory_base + "GA17_Np64e6_nx1_dt0.01_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T300/"] = 1e1
+data_nsd[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T300/"] = 1e1
+data_nsd[directory_base + "GA17_Np64e6_nx1_dt1_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T300/"] = 1e1
+data_nsd[directory_base + "GA17_Np64e6_nx1_dt10_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T300/"] = 1e1
+
+data_dt = {}
+data_dt[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300/"] = 1e10 # 1e10 used to mark variable dt, lame...
+data_dt[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300_RngSeedInit44/"] = 1e10
+data_dt[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e5Tail_Ens100_T300/"] = 0.1
+data_dt[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e4Tail_Ens1e3_T300/"] = 0.1
+data_dt[directory_base + "GA17_Np64e6_nx1_dt0.01_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"] = 0.01
+data_dt[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"] = 0.1
+data_dt[directory_base + "GA17_Np64e6_nx1_dt1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"] = 1
+data_dt[directory_base + "GA17_Np64e6_nx1_dt10_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"] = 10
+data_dt[directory_base + "GA17_Np64e6_nx1_dt0.01_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] = 0.01
+data_dt[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] = 0.1
+data_dt[directory_base + "GA17_Np64e6_nx1_dt1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] = 1
+data_dt[directory_base + "GA17_Np64e6_nx1_dt10_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] = 10
+data_dt[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300_RngSeedInit44/"] = 0.1
+data_dt[directory_base + "GA17_Np64e6_nx1_dt0.01_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T300/"] = 0.01
+data_dt[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T300/"] = 0.1
+data_dt[directory_base + "GA17_Np64e6_nx1_dt1_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T300/"] = 1
+data_dt[directory_base + "GA17_Np64e6_nx1_dt10_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T300/"] = 10
+
+
+# linestyles denote dt
+#linestyles = ['-', '--']
+#ls_dt = {
+#  1e10 : 'solid',
+#  0.01 : 'dashed', 
+#  0.1  : 'dotted', 
+#  1    : 'dashdot', 
+#  10   : (0, (3, 5, 1, 5, 1, 5))
+#}
+ls_dt = {
+  1e10 : 'dotted',
+  0.01 : 'solid', 
+  0.1  : 'solid', 
+  1    : 'solid', 
+  10   : 'solid'
+}
+
+# alternatively - line alpha denotes dt
+la_dt = {
+  1e10 : 1, 
+  0.01 : 0.85,
+  0.1  : 0.7,
+  1    : 0.55,
+  10   : 0.4
+}
+
+# colors denote NSD
 # colors fom the default
 prop_cycle = plt.rcParams['axes.prop_cycle']
 colors = prop_cycle.by_key()['color']
+lc_nsd = {
+  1e1 : colors[0],
+  1e2 : colors[1],
+  1e3 : colors[2],
+  1e4 : colors[3],
+  1e5 : colors[4],
+  64e6 : 'black'
+}
+
 data_color = {}
 data_ls = {}
-for i,ds in enumerate(available_datasets):
-  data_color[ds] = colors[i % len(colors)] 
-  data_ls[ds] = linestyles[int(i/len(colors))]
+data_la = {}
+for ds in available_datasets:
+  data_color[ds] = lc_nsd[data_nsd[ds]] 
+  data_ls[ds] = ls_dt[data_dt[ds]] 
+  data_la[ds] = la_dt[data_dt[ds]] 
+
+#override line style for const rng seed init runs
+data_ls[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300_RngSeedInit44/"] =    'dashdot' 
+data_ls[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300_RngSeedInit44/"] = 'dashdot' 
 
 # wplyw dt
 data_labels = {}
 
-data_labels[directory_base + "GA17_Np64e6_nx1_dt10_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"]  = "const SD, $N_\mathrm{SD}=1e3$, large tail init, $\Delta t = 10\ \mathrm{s}$"
-data_labels[directory_base + "GA17_Np64e6_nx1_dt1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"]  = "const SD, $N_\mathrm{SD}=1e3$, large tail init, $\Delta t = 1\ \mathrm{s}$"
-#data_labels[directory_base + "GA17_Np64e6_nx1_dt0.01_SstpCoal1_Onishi_SdConc1e3Tail_Ens100_T300/"] = "DT 0.01 SstpCoal1  Sd1e3Tail"
-data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"]  = "const SD, $N_\mathrm{SD}=1e3$, large tail init, $\Delta t = 0.1\ \mathrm{s}$"
-data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal10_Onishi_SdConc1e3Tail_Ens100_T300/"] = "const SD, $N_\mathrm{SD}=1e3$, large tail init, $\Delta t = 0.01\ \mathrm{s}$"
+#data_labels[directory_base + "GA17_Np64e6_nx1_dt10_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"]  = "const SD, $N_\mathrm{SD}=1e3$, large tail init, $\Delta t = 10\ \mathrm{s}$"
+#data_labels[directory_base + "GA17_Np64e6_nx1_dt1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"]  = "const SD, $N_\mathrm{SD}=1e3$, large tail init, $\Delta t = 1\ \mathrm{s}$"
+##data_labels[directory_base + "GA17_Np64e6_nx1_dt0.01_SstpCoal1_Onishi_SdConc1e3Tail_Ens100_T300/"] = "DT 0.01 SstpCoal1  Sd1e3Tail"
+#data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"]  = "const SD, $N_\mathrm{SD}=1e3$, large tail init, $\Delta t = 0.1\ \mathrm{s}$"
+#data_labels[directory_base + "GA17_Np64e6_nx1_dt0.01_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"] = "const SD, $N_\mathrm{SD}=1e3$, large tail init, $\Delta t = 0.01\ \mathrm{s}$"
 
-data_labels[directory_base + "GA17_Np64e6_nx1_dt10_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] = "const SD, $N_\mathrm{SD}=1e2$, large tail init, $\Delta t = 10\ \mathrm{s}$"
-data_labels[directory_base + "GA17_Np64e6_nx1_dt1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] = "const SD, $N_\mathrm{SD}=1e2$, large tail init, $\Delta t = 1\ \mathrm{s}$"
-data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] = "const SD, $N_\mathrm{SD}=1e2$, large tail init, $\Delta t = 0.1\ \mathrm{s}$"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.01_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] = "$N_\mathrm{SD}=10^2$, $\Delta t = 0.01\ \mathrm{s}$"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] = "$N_\mathrm{SD}=10^2$, $\Delta t = 0.1\ \mathrm{s}$"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] = "$N_\mathrm{SD}=10^2$, $\Delta t = 1\ \mathrm{s}$"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt10_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] = "$N_\mathrm{SD}=10^2$, $\Delta t = 10\ \mathrm{s}$"
 
 fig, ax = plt.subplots(1, 2, figsize=(8,4))
-plot_DSD(data_labels, data_color, data_ls, False, fig, ax, 300)
+plot_DSD(data_labels, data_color, data_ls, data_la, False, fig, ax, 300)
 #single legend for the whole figure
 handles, labels = ax[0].get_legend_handles_labels()
 lgd = fig.legend(handles, labels, handlelength=4, loc='lower center', bbox_to_anchor=(0.475,0))
@@ -95,7 +172,7 @@ lgd = fig.legend(handles, labels, handlelength=4, loc='lower center', bbox_to_an
 for i,axs in enumerate(ax.flatten()):
   axs.text(0.1, 0.9, labeldict[i], fontsize=10, transform=axs.transAxes)
 fig.tight_layout()
-fig.subplots_adjust(bottom=0.5, wspace=0.3)#, hspace=0.25)
+fig.subplots_adjust(bottom=0.4, wspace=0.3)#, hspace=0.25)
 fig.savefig("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/img/DSD_timestep_t300.pdf")
 
 
@@ -110,8 +187,8 @@ data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Ta
 data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300_RngSeedInit44/"] = "const SD, $N_\mathrm{SD}=1e2$, large tail init, no randomness in initial DSD"
 
 fig, ax = plt.subplots(2, 2, figsize=(8,8))
-plot_DSD(data_labels, data_color, data_ls, False, fig, ax[0], 0)
-plot_DSD(data_labels, data_color, data_ls, False, fig, ax[1], 300)
+plot_DSD(data_labels, data_color, data_ls, data_la, False, fig, ax[0], 0)
+plot_DSD(data_labels, data_color, data_ls, data_la, False, fig, ax[1], 300)
 ax[0,0].set_xlabel('')
 ax[0,1].set_xlabel('')
 ax[0,0].set_title('$t=0\ s$')
@@ -131,17 +208,17 @@ fig.savefig("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/img/DSD_init
 
 ## porownanie symulacji dla roznej liczby SD
 data_labels = {}
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T300/"] =  "$N_\mathrm{SD}=10^1$, $\Delta t = 0.1\ \mathrm{s}$"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] =  "$N_\mathrm{SD}=10^2$, $\Delta t = 0.1\ \mathrm{s}$"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"] =  "$N_\mathrm{SD}=10^3$, $\Delta t = 0.1\ \mathrm{s}$"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e4Tail_Ens1e3_T300/"] =  "$N_\mathrm{SD}=10^4$, $\Delta t = 0.1\ \mathrm{s}$"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e5Tail_Ens100_T300/"] =  "$N_\mathrm{SD}=10^5$, $\Delta t = 0.1\ \mathrm{s}$"
 data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300/"] =     "one-to-one"
-data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e5Tail_Ens100_T300/"] =  "const SD, $N_\mathrm{SD}=1e5$, large tail init"
-data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e4Tail_Ens1e3_T300/"] =  "const SD, $N_\mathrm{SD}=1e4$, large tail init"
-data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"] = "const SD, $N_\mathrm{SD}=1e3$, large tail init"
-data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] =  "const SD, $N_\mathrm{SD}=1e2$, large tail init"
-data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T300/"] =  "const SD, $N_\mathrm{SD}=1e1$, large tail init"
 
 
 fig, ax = plt.subplots(2, 2, figsize=(8,8))
-plot_DSD(data_labels, data_color, data_ls, True, fig, ax[0], 0)
-plot_DSD(data_labels, data_color, data_ls, True, fig, ax[1], 300)
+plot_DSD(data_labels, data_color, data_ls, data_la, True, fig, ax[0], 0)
+plot_DSD(data_labels, data_color, data_ls, data_la, True, fig, ax[1], 300)
 ax[0,0].set_xlabel('')
 ax[0,1].set_xlabel('')
 ax[0,0].set_title('$t=0\ s$')
@@ -172,15 +249,16 @@ data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e5Ta
 #data_labels[directory_base + "GA17_Np64e6_nx1_dt1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] =    "5e1 pairs / s, SD 1e2 tail"
 #data_labels[directory_base + "GA17_Np64e6_nx1_dt1_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T300/"] =  "5e0 pairs / s, SD 1e1 tail"
 #data_labels[directory_base + "GA17_Np64e6_nx1_dt10_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] =    "5e0 pairs / s, SD 1e2 tail"
-plot_DSD_diff(data_labels, data_color, data_ls, "one-to-one", 300, "NSD_dt0.1")
+plot_DSD_diff(data_labels, data_color, data_ls, data_la, "one-to-one", 300, "NSD_dt0.1")
 
 # roznica dt wzgledem one-to-one, stale SD=1e1
 data_labels = {}
 data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300/"] =     "one-to-one" # 3.2e8 pairs / s
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.01_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T300/"] =  "5e2 pairs / s, SD 1e1 tail, $\Delta t = 0.01\ \mathrm{s}$"
 data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T300/"] =  "5e1 pairs / s, SD 1e1 tail, $\Delta t = 0.1\ \mathrm{s}$"
 data_labels[directory_base + "GA17_Np64e6_nx1_dt1_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T300/"] =  "5e0 pairs / s, SD 1e1 tail, $\Delta t = 1\ \mathrm{s}$"
 data_labels[directory_base + "GA17_Np64e6_nx1_dt10_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T300/"] =  "5e-1 pairs / s, SD 1e1 tail, $\Delta t = 10\ \mathrm{s}$"
-plot_DSD_diff(data_labels, data_color, data_ls, "one-to-one", 300, "dt_NSD1e1")
+plot_DSD_diff(data_labels, data_color, data_ls, data_la, "one-to-one", 300, "dt_NSD1e1")
 
 # roznica dt wzgledem one-to-one, stale SD=1e2
 data_labels = {}
@@ -189,13 +267,14 @@ data_labels[directory_base + "GA17_Np64e6_nx1_dt0.01_SstpCoal1_Onishi_SdConc1e2T
 data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] =  "5e2 pairs / s, SD 1e2 tail, $\Delta t = 0.1\ \mathrm{s}$"
 data_labels[directory_base + "GA17_Np64e6_nx1_dt1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] =    "5e1 pairs / s, SD 1e2 tail, $\Delta t = 1\ \mathrm{s}$"
 data_labels[directory_base + "GA17_Np64e6_nx1_dt10_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] =    "5e0 pairs / s, SD 1e2 tail, $\Delta t = 10\ \mathrm{s}$"
-plot_DSD_diff(data_labels, data_color, data_ls, "one-to-one", 300, "dt_NSD1e2")
+plot_DSD_diff(data_labels, data_color, data_ls, data_la, "one-to-one", 300, "dt_NSD1e2")
 
 # roznica dt wzgledem one-to-one, stale SD=1e3
 data_labels = {}
 data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300/"] =     "one-to-one" # 3.2e8 pairs / s
 #data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal10_Onishi_SdConc1e3Tail_Ens100_T300/"] = "5e4 pairs / s, SD 1e3 tail, $\Delta t = 0.01\ \mathrm{s}$"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.01_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"]  = "5e4 pairs / s, SD 1e3 tail, $\Delta t = 0.01\ \mathrm{s}$"
 data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"]  = "5e3 pairs / s, SD 1e3 tail, $\Delta t = 0.1\ \mathrm{s}$"
 data_labels[directory_base + "GA17_Np64e6_nx1_dt1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"]  = "5e2 pairs / s, SD 1e3 tail, $\Delta t = 1\ \mathrm{s}$"
 data_labels[directory_base + "GA17_Np64e6_nx1_dt10_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"]  = "5e1 pairs / s, SD 1e3 tail, $\Delta t = 10\ \mathrm{s}$"
-plot_DSD_diff(data_labels, data_color, data_ls, "one-to-one", 300, "dt_NSD1e3")
+plot_DSD_diff(data_labels, data_color, data_ls, data_la, "one-to-one", 300, "dt_NSD1e3")
