@@ -159,8 +159,8 @@ def plot_DSD(data_labels, data_colors, data_ls, data_la, EFM_flag, fig, ax, time
   #plt.show()
 
 
-def plot_DSD_diff(data_labels, data_colors, data_ls, data_la, ref_label, time, outname):
-  fig, ax = plt.subplots(figsize=(8,8))
+def plot_DSD_diff(ax, data_labels, data_colors, data_ls, data_la, ref_label, time, outname):
+#  fig, ax = plt.subplots(figsize=(8,8))
 
   key_list = list(data_labels.keys())
   val_list = list(data_labels.values())
@@ -193,4 +193,4 @@ def plot_DSD_diff(data_labels, data_colors, data_ls, data_la, ref_label, time, o
   ax.set_ylim()
 #  ax.grid(axis='y', color='0.5')
   ax.legend()
-  plt.savefig("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/img/DSD_diff_"+str(outname)+"_t"+str(time)+".pdf")
+#  plt.savefig("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/img/DSD_diff_"+str(outname)+"_t"+str(time)+".pdf")
