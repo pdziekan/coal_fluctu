@@ -12,12 +12,24 @@ plots = ["tau", "nrain", "rmax"]
 
 data = {}
 
-directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/OnishihalfN/LCM/GA17_from_libcloudphxx/nx300/GA17_Np1e0_nx300_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300"
+directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/OnishihalfN/LCM/GA17_from_libcloudphxx/cuda_k_4/nx300/GA17_Np1e0_nx300_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300"
 data[directory + "/"]   = "nx300"
 data[directory + "_2/"] = "nx300"
 data[directory + "_3/"] = "nx300"
 data[directory + "_4/"] = "nx300"
 data[directory + "_5/"] = "nx300"
+
+
+directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/OnishihalfN/LCM/GA17_from_libcloudphxx/ares/nx300/GA17_Np1e0_nx300_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300"
+data[directory + "/1/"]   = "nx300 ares"
+data[directory + "/2/"]   = "nx300 ares"
+data[directory + "/3/"]   = "nx300 ares"
+data[directory + "/4/"]   = "nx300 ares"
+data[directory + "/5/"]   = "nx300 ares"
+data[directory + "/6/"]   = "nx300 ares"
+data[directory + "/7/"]   = "nx300 ares"
+data[directory + "/8/"]   = "nx300 ares"
+
 #
 #directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/OnishihalfN/LCM/GA17_from_libcloudphxx/nx30/GA17_Np1e3_nx30_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300"
 #data[directory + "_part/"]   = "nx30"
@@ -37,8 +49,8 @@ data[directory + "_5/"] = "nx300"
 #data[directory + "_4/"] = "nx1 c"
 #data[directory + "_5/"] = "nx1 d"
 
-directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/OnishihalfN/LCM/zero_dim/ares/GA17_Np27e6_nx1_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300"
-data[directory + "/"] = "nx1 ares"
+#directory = "/home/piotr/praca/coal_fluctu_dim/well_mixed_cell_size/data/OnishihalfN/LCM/zero_dim/ares/GA17_Np27e6_nx1_eps0.1_dt1var_OnishihalfN_HallDavis_stopr300"
+#data[directory + "/"] = "nx1 ares"
 
 #fig, axs = plt.subplots(3, 2, figsize=(8, 8))
 fig, axs = plt.subplots(3, 2, figsize=(8, 8))

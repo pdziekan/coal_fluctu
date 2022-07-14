@@ -136,8 +136,8 @@ def plot_DSD(data_labels, data_colors, data_ls, data_la, EFM_flag, fig, ax, time
   ax[1].set_xlabel('$r\ [\mathrm{\mu m}]$')
   #ax[0].set_ylabel('mean mass density m(r) [g/m^3 / m]')
 #  ax[0].set_ylabel('mean mass density m(log r) [g/m^3 / unit(log[um])')
-  ax[0].set_ylabel('$<m>\ [\mathrm{g/m^3 \ / \ unit(log[\mu m])}]$')
-  ax[1].set_ylabel('$\sigma(m)\ [\mathrm{g/m^3 \ / \ unit(log[\mu m])}]$')
+  ax[0].set_ylabel('$<m>\ [\mathrm{gm^{-3} \ / \ unit(ln(\mu m))}]$')
+  ax[1].set_ylabel('$\sigma(m)\ [\mathrm{gm^{-3} \ / \ unit(ln(\mu m))}]$')
 #  ax[1].set_ylabel('standard deviation of mass density m(log r) [g/m^3 / unit(log[um])')
   
   ax[0].set_xscale('log')
@@ -186,7 +186,7 @@ def plot_DSD_diff(ax, data_labels, data_colors, data_ls, data_la, ref_label, tim
 
   
   ax.set_xlabel('$r\ [\mathrm{\mu m}]$')
-  ax.set_ylabel('$(<m>_\mathrm{SD} - <m>_\mathrm{0})\ v_\mathrm{t}\ \ [\mathrm{g/m^3 * m/s \ / \ unit(log[um])}]$')
+  ax.set_ylabel('$(<m>_\mathrm{SD} - <m>_\mathrm{0})\ v_\mathrm{t}\ \ [\mathrm{g m^{-2} s^{-1} \ / \ unit(ln(um))}]$')
   ax.set_xscale('log')
 #  ax.set_yscale('symlog', linthresh=1e-3)
   ax.set_xlim(7,3e2)

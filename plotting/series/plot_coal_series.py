@@ -53,7 +53,7 @@ def plot_coal_series(plot, data, fig, axs):
   #fig, ax = plt.subplots(figsize=(12,9))
   
   #  time_min = {} 
-  time_max = 1e10     # do not plot results for time exceeding the moment fastest simulation reached the end (produced large droplet)
+  time_max = 1e10     # used not to plot results for time exceeding the moment fastest simulation reached the end (produced large droplet), initialized to dummy value
   all_time_lab = {}
   all_data_lab = {}
   ensemble_lab = {}
@@ -69,11 +69,22 @@ def plot_coal_series(plot, data, fig, axs):
     print(plot)
     print(pre)
     print(label)
+
+    #check how many simulations actually reached rstop, last might not reach it due to interrupt
+    fs = open(pre+"rstop.dat","r")
+    nsim = len(fs.readlines())
   
     ft = open(pre+"time.dat","r")
     fd = open(pre+plot+".dat","r")
-    all_time=[x.split() for x in ft.readlines()]
-    all_data=[x.split() for x in fd.readlines()]
+
+    lines = ft.readlines()
+    if len(lines) > nsim:
+      lines = lines[:-1]
+    all_time=[x.split() for x in lines]
+    lines = fd.readlines()
+    if len(lines) > nsim:
+      lines = lines[:-1]
+    all_data=[x.split() for x in lines]
   
     if label not in ensemble_lab:
       ensemble_lab[label] = 0

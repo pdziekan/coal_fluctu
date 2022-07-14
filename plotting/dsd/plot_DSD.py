@@ -288,6 +288,9 @@ ax[0,0].set_xlabel('')
 ax[0,1].set_xlabel('')
 ax[0,1].set_ylabel('')
 ax[1,1].set_ylabel('')
+# a b c d labels
+for i,axs in enumerate(ax.flatten()):
+  axs.text(0.9, 0.9, labeldict[i], fontsize=10, transform=axs.transAxes)
 fig.tight_layout()
 plt.savefig("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/img/DSD_diff.pdf")
 
