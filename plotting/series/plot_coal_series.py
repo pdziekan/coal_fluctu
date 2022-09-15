@@ -151,6 +151,9 @@ def plot_coal_series(plot, data, fig, axs):
 #      print("data between (tmax-outfreq, tmax>:", data_till_tmax[time_till_tmax>time_max-outfreq])
 #      print("number of data points between (tmax-outfreq, tmax>:", np.size(data_till_tmax[time_till_tmax>time_max-outfreq]))
 
+#      if label == "nx300 ares":
+#        data_till_tmax[time_till_tmax > 0] = data_till_tmax[time_till_tmax > 0] - data_till_tmax[]
+
       bin_count,   bin_edges, binnumber = stats.binned_statistic(time_till_tmax, data_till_tmax, bins=_bin_edges, statistic='count')
       bin_mean   , bin_edges, binnumber = stats.binned_statistic(time_till_tmax, data_till_tmax, bins=_bin_edges, statistic='mean')
       bin_std_dev, bin_edges, binnumber = stats.binned_statistic(time_till_tmax, data_till_tmax, bins=_bin_edges, statistic='std')
@@ -173,11 +176,10 @@ def plot_coal_series(plot, data, fig, axs):
       bin_std_dev_lab[label] = bin_std_dev[bin_count>0]
       bin_std_dev_err_lab[label] = bin_std_dev[bin_count>0] / np.sqrt(2*(bin_count[bin_count>0]-1))
   
-#      axs[0,0].errorbar(bin_mean_time_lab[label], bin_mean_lab[label], yerr=SE_scale * bin_mean_err_lab[label],       label=label, color=color_lab[label], ls='', marker='.', markersize=3)
-#      axs[0,1].errorbar(bin_mean_time_lab[label], bin_std_dev_lab[label], yerr=SE_scale * bin_std_dev_err_lab[label], label=label, color=color_lab[label], ls='', marker='.', markersize=3)
-
-      axs[0,0].errorbar(bin_mean_time_lab[label], bin_mean_lab[label], yerr=0,       label=label, color=color_lab[label], ls='', marker='.', markersize=3)
-      axs[0,1].errorbar(bin_mean_time_lab[label], bin_std_dev_lab[label], yerr=0, label=label, color=color_lab[label], ls='', marker='.', markersize=3)
+      axs[0,0].errorbar(bin_mean_time_lab[label], bin_mean_lab[label], yerr=SE_scale * bin_mean_err_lab[label],       label=label, color=color_lab[label], ls='', marker='.', markersize=3)
+      axs[0,1].errorbar(bin_mean_time_lab[label], bin_std_dev_lab[label], yerr=SE_scale * bin_std_dev_err_lab[label], label=label, color=color_lab[label], ls='', marker='.', markersize=3)
+#      axs[0,0].errorbar(bin_mean_time_lab[label], bin_mean_lab[label], yerr=0,       label=label, color=color_lab[label], ls='', marker='.', markersize=3)
+#      axs[0,1].errorbar(bin_mean_time_lab[label], bin_std_dev_lab[label], yerr=0, label=label, color=color_lab[label], ls='', marker='.', markersize=3)
   
 #        axs[0].errorbar(bin_centers[bin_count>0], bin_mean[bin_count>0]   , yerr=1.96 * bin_std_dev[bin_count>0] / np.sqrt(bin_count[bin_count>0]),       label=label, color=color_lab[label], ls='')
 #        axs[1].errorbar(bin_centers[bin_count>0], bin_std_dev[bin_count>0], yerr=1.96 * bin_std_dev[bin_count>0] / np.sqrt(2*(bin_count[bin_count>0]-1)), label=label, color=color_lab[label], ls='')
