@@ -71,6 +71,7 @@ def plot_DSD(data_labels, data_colors, data_ls, data_la, EFM_flag, fig, ax, time
     LCM_dlogr = np.log(LCM_r[1]) - np.log(LCM_r[0]) # [log(um)]
     LCM_M = LCM_m_logr * LCM_dlogr * volume * 1e-3 # mass of droplets of this size in the cell [kg]
     LCM_N = LCM_M / four_over_three_pi_rhow / np.power(LCM_r,3) # number of droplets of this size in the cell [1]
+    print(pre)
     print("total number of droplets in the cell in LCM at the end: ", np.sum(LCM_N))
     print("total mass of droplets in the cell in LCM at the end: ", np.sum(LCM_M))
   
@@ -94,7 +95,7 @@ def plot_DSD(data_labels, data_colors, data_ls, data_la, EFM_flag, fig, ax, time
   
   # EFM results (Smoluchowski)
   if EFM_flag:
-    efm_data = np.genfromtxt("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/data/EFM/dt 0.1_rq015.0_xmw 2.0_scal10.0_isw3_cut****_rmr****_tmax301._boplot00.out", unpack=True)
+    efm_data = np.genfromtxt("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/data/EFM/dt 0.1_rq015.0_xmw 2.0_scal10.0_isw3_cut_____rmr_____tmax301._boplot00.out", unpack=True)
     #efm_data = np.genfromtxt("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/data/EFM/dt 0.1_rq015.0_xmw 2.0_scal15.0_isw3_cut****_rmr****_tmax301._boplot00.out", unpack=True)
     # efm_data[0] - radius[um]
     # efm_data[1] - mass density m(ln r) [kg/m3] with radius in microns
