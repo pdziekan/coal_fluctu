@@ -289,6 +289,11 @@ ax[0,0].set_title("$N_\mathrm{SD}^\mathrm{(bin)}=10^1$")
 ax[0,1].set_title("$N_\mathrm{SD}^\mathrm{(bin)}=10^2$")
 ax[1,0].set_title("$N_\mathrm{SD}^\mathrm{(bin)}=10^3$")
 
+#ax[0,0].set_ylim(-0.06, 0.05)
+#ax[0,1].set_ylim(-0.06, 0.05)
+#ax[1,0].set_ylim(-0.06, 0.05)
+#ax[1,1].set_ylim(-0.06, 0.05)
+
 ax[0,0].set_xlabel('')
 ax[0,1].set_xlabel('')
 ax[0,1].set_ylabel('')

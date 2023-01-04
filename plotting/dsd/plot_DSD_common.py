@@ -193,5 +193,5 @@ def plot_DSD_diff(ax, data_labels, data_colors, data_ls, data_la, ref_label, tim
   ax.set_xlim(7,3e2)
   ax.set_ylim()
 #  ax.grid(axis='y', color='0.5')
-  ax.legend()
+  ax.legend(loc='upper left')
 #  plt.savefig("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/img/DSD_diff_"+str(outname)+"_t"+str(time)+".pdf")
