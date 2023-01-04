@@ -158,10 +158,10 @@ data_labels = {}
 #data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"]  = "const SD, $N_\mathrm{SD}^\mathrm{(bin)}=1e3$, large tail init, $\Delta t_\mathrm{coal} = 0.1\ \mathrm{s}$"
 #data_labels[directory_base + "GA17_Np64e6_nx1_dt0.01_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"] = "const SD, $N_\mathrm{SD}^\mathrm{(bin)}=1e3$, large tail init, $\Delta t_\mathrm{coal} = 0.01\ \mathrm{s}$"
 
-data_labels[directory_base + "GA17_Np64e6_nx1_dt0.01_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] = "$N_\mathrm{SD}^\mathrm{(bin)}=10^2$, $\Delta t_\mathrm{coal} = 0.01\ \mathrm{s}$"
-data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] = "$N_\mathrm{SD}^\mathrm{(bin)}=10^2$, $\Delta t_\mathrm{coal} = 0.1\ \mathrm{s}$"
-data_labels[directory_base + "GA17_Np64e6_nx1_dt1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] = "$N_\mathrm{SD}^\mathrm{(bin)}=10^2$, $\Delta t_\mathrm{coal} = 1\ \mathrm{s}$"
-data_labels[directory_base + "GA17_Np64e6_nx1_dt10_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] = "$N_\mathrm{SD}^\mathrm{(bin)}=10^2$, $\Delta t_\mathrm{coal} = 10\ \mathrm{s}$"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.01_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] = "$\Delta t_\mathrm{coal} = 0.01\ \mathrm{s}$"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] =  "$\Delta t_\mathrm{coal} = 0.1\ \mathrm{s}$"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] =    "$\Delta t_\mathrm{coal} = 1\ \mathrm{s}$"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt10_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] =   "$\Delta t_\mathrm{coal} = 10\ \mathrm{s}$"
 
 fig, ax = plt.subplots(1, 2, figsize=(8,4))
 plot_DSD(data_labels, data_color, data_ls, data_la, False, fig, ax, 300)
@@ -173,6 +173,7 @@ for i,axs in enumerate(ax.flatten()):
   axs.text(0.1, 0.9, labeldict[i], fontsize=10, transform=axs.transAxes)
 fig.tight_layout()
 fig.subplots_adjust(bottom=0.4, wspace=0.3)#, hspace=0.25)
+#fig.suptitle("$N_\mathrm{SD}^\mathrm{(bin)}=10^2$")
 fig.savefig("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/img/DSD_timestep_t300.pdf")
 
 
@@ -208,11 +209,11 @@ fig.savefig("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/img/DSD_init
 
 ## porownanie symulacji dla roznej liczby SD
 data_labels = {}
-data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T300/"] =  "$N_\mathrm{SD}^\mathrm{(bin)}=10^1$, $\Delta t_\mathrm{coal} = 0.1\ \mathrm{s}$"
-data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] =  "$N_\mathrm{SD}^\mathrm{(bin)}=10^2$, $\Delta t_\mathrm{coal} = 0.1\ \mathrm{s}$"
-data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"] =  "$N_\mathrm{SD}^\mathrm{(bin)}=10^3$, $\Delta t_\mathrm{coal} = 0.1\ \mathrm{s}$"
-data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e4Tail_Ens1e3_T300/"] =  "$N_\mathrm{SD}^\mathrm{(bin)}=10^4$, $\Delta t_\mathrm{coal} = 0.1\ \mathrm{s}$"
-data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e5Tail_Ens100_T300/"] =  "$N_\mathrm{SD}^\mathrm{(bin)}=10^5$, $\Delta t_\mathrm{coal} = 0.1\ \mathrm{s}$"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T300/"] =  "$N_\mathrm{SD}^\mathrm{(bin)}=10^1$"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] =  "$N_\mathrm{SD}^\mathrm{(bin)}=10^2$"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"] =  "$N_\mathrm{SD}^\mathrm{(bin)}=10^3$"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e4Tail_Ens1e3_T300/"] =  "$N_\mathrm{SD}^\mathrm{(bin)}=10^4$"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e5Tail_Ens100_T300/"] =  "$N_\mathrm{SD}^\mathrm{(bin)}=10^5$"
 data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300/"] =     "one-to-one"
 
 
