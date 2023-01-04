@@ -209,6 +209,28 @@ fig.savefig("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/img/DSD_init
 
 ## porownanie symulacji dla roznej liczby SD
 data_labels = {}
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T300/"] =  "$N_\mathrm{SD}=10^1$"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] =  "$N_\mathrm{SD}=10^2$"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"] =  "$N_\mathrm{SD}=10^3$"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e4Tail_Ens1e3_T300/"] =  "$N_\mathrm{SD}=10^4$"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e5Tail_Ens100_T300/"] =  "$N_\mathrm{SD}=10^5$"
+data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300/"] =     "reference"
+
+fig, ax = plt.subplots(1, 2, figsize=(8,5))
+
+plot_DSD(data_labels, data_color, data_ls, data_la, False, fig, ax, 300)
+ax[0].set_ylabel('mean droplet size distribution')
+ax[1].set_ylabel('standard deviation of droplet size distribution')
+#single legend for the whole figure
+handles, labels = ax[0].get_legend_handles_labels()
+lgd = fig.legend(handles, labels, handlelength=4, loc='lower center', bbox_to_anchor=(0.475,0))
+fig.tight_layout()
+fig.subplots_adjust(bottom=0.35, wspace=0.3)#, hspace=0.25)
+fig.savefig("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/img/DSD_NSD_t300.png", dpi=300)
+
+
+## porownanie symulacji dla roznej liczby SD
+data_labels = {}
 data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T300/"] =  "$N_\mathrm{SD}^\mathrm{(bin)}=10^1$"
 data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] =  "$N_\mathrm{SD}^\mathrm{(bin)}=10^2$"
 data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"] =  "$N_\mathrm{SD}^\mathrm{(bin)}=10^3$"
