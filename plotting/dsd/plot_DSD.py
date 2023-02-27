@@ -219,8 +219,11 @@ data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1
 fig, ax = plt.subplots(1, 2, figsize=(8,5))
 
 plot_DSD(data_labels, data_color, data_ls, data_la, False, fig, ax, 300)
-ax[0].set_ylabel('mean droplet size distribution')
-ax[1].set_ylabel('standard deviation of droplet size distribution')
+ax[0].set_ylabel('')
+ax[1].set_ylabel('')
+
+ax[0].set_title('mean droplet mass distribution')
+ax[1].set_title('std. dev. of droplet mass distribution')
 #single legend for the whole figure
 handles, labels = ax[0].get_legend_handles_labels()
 lgd = fig.legend(handles, labels, handlelength=4, loc='lower center', bbox_to_anchor=(0.475,0))
