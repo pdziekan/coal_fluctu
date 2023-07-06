@@ -42,12 +42,14 @@
 
 // ---- cell size ----
 
-//#define NXNYNZ 10 // number of cells in each direction
-//#define NP 64e3 // init number of droplets per cell
-//#define DT 0.1 // [s]
-#define NXNYNZ 400 // number of cells in each direction
-#define NP 1 // init number of droplets per cell
-#define DT 1e-2 // [s]
+#define NXNYNZ 10 // number of cells in each direction
+#define NP 64e3 // init number of droplets per cell
+#define DT 0.1 // [s]
+#define DOMAIN_INIT
+
+//#define NXNYNZ 400 // number of cells in each direction
+//#define NP 1 // init number of droplets per cell
+//#define DT 1e-2 // [s]
 
 
 // ---- init max radius and stop/remove radius ----
@@ -57,8 +59,8 @@
 
 // ---- other parameters ----
 
-#define N_REP 1e1
-#define SPINUP 10   // [s] initial period without coalescence
+#define N_REP 1e3
+#define SPINUP 30   // [s] initial period without coalescence
 #define SIMTIME 300 // [s] simulation time after spinup
 #define OUTFREQ 300 // output done every SIMTIME / OUTFREQ seconds
 #define DISS_RATE 0.1 // [cm^2 / s^3]
@@ -216,8 +218,8 @@ const auto visc = libcloudphxx::common::vterm::visc(temperature);
 
 const real_t outinterval = double(SIMTIME) / double(OUTFREQ);
 
-const int sd_const_multi = 1; const real_t sd_conc = 0; const bool tail = 0;
-//const int sd_const_multi = 0; const real_t sd_conc = 1e0; const bool tail = 1;
+//const int sd_const_multi = 1; const real_t sd_conc = 0; const bool tail = 0;
+const int sd_const_multi = 0; const real_t sd_conc = 1e0; const bool tail = 1;
 
 // timing stuff
 std::chrono::system_clock::time_point tbeg, tend;
@@ -461,6 +463,9 @@ int main(int argc, char *argv[]){
 #ifdef RNG_SEED_INIT
             << " rng_seed_init = " << RNG_SEED_INIT
 #endif
+#ifdef DOMAIN_INIT
+            << " DOMAIN_INIT is on "
+#endif
             << " sstp_coal = " << sstp_coal
             << " const_multi = " << sd_const_multi
             << " sd_conc = " << sd_conc
@@ -523,6 +528,9 @@ int main(int argc, char *argv[]){
     opts_init.sstp_cond = 1; 
 #ifdef variable_dt
     opts_init.variable_dt_switch = true;
+#endif
+#ifdef DOMAIN_INIT
+    opts_init.domain_sd_init = true;
 #endif
 #ifdef RNG_SEED_INIT
     opts_init.rng_seed_init = RNG_SEED_INIT;
