@@ -42,9 +42,11 @@
 
 // ---- cell size ----
 
-#define NXNYNZ 1 // number of cells in each direction
-#define NP 64e6 // init number of droplets per cell
+#define NXNYNZ 10 // number of cells in each direction
+#define NP 64e3 // init number of droplets per cell
 #define DT 0.1 // [s]
+#define DOMAIN_INIT
+
 //#define NXNYNZ 400 // number of cells in each direction
 //#define NP 1 // init number of droplets per cell
 //#define DT 1e-2 // [s]
@@ -57,8 +59,9 @@
 
 // ---- other parameters ----
 
-#define N_REP 1e4
-#define SIMTIME 300 // [s]
+#define N_REP 1e3
+#define SPINUP 30   // [s] initial period without coalescence
+#define SIMTIME 300 // [s] simulation time after spinup
 #define OUTFREQ 300 // output done every SIMTIME / OUTFREQ seconds
 #define DISS_RATE 0.1 // [cm^2 / s^3]
 
@@ -69,7 +72,7 @@
 #define HIST_BINS 51 // number of bins in the output size spectrum
 #define HIST_MIN 1    // minimum radius of the output size spectrum [um]
 #define HIST_MAX 200  // maximum radius of the output size spectrum [um]
-#define BACKEND serial // CUDA
+#define BACKEND CUDA
 #define N_SD_MAX (NP*NXNYNZ*NXNYNZ*NXNYNZ)
 #if NXNYNZ > 1
   #define SEDI 1
@@ -216,7 +219,7 @@ const auto visc = libcloudphxx::common::vterm::visc(temperature);
 const real_t outinterval = double(SIMTIME) / double(OUTFREQ);
 
 //const int sd_const_multi = 1; const real_t sd_conc = 0; const bool tail = 0;
-const int sd_const_multi = 0; const real_t sd_conc = 1e1; const bool tail = 1;
+const int sd_const_multi = 0; const real_t sd_conc = 1e0; const bool tail = 1;
 
 // timing stuff
 std::chrono::system_clock::time_point tbeg, tend;
@@ -455,9 +458,13 @@ int main(int argc, char *argv[]){
 //            << " n_large_cells = " << n_large_cells
             << " n_cell = " << n_cell
             << " SIMTIME = " << SIMTIME
+            << " SPINUP = " << SPINUP
             << " DT = " << DT
 #ifdef RNG_SEED_INIT
             << " rng_seed_init = " << RNG_SEED_INIT
+#endif
+#ifdef DOMAIN_INIT
+            << " DOMAIN_INIT is on "
 #endif
             << " sstp_coal = " << sstp_coal
             << " const_multi = " << sd_const_multi
@@ -521,6 +528,9 @@ int main(int argc, char *argv[]){
     opts_init.sstp_cond = 1; 
 #ifdef variable_dt
     opts_init.variable_dt_switch = true;
+#endif
+#ifdef DOMAIN_INIT
+    opts_init.domain_sd_init = true;
 #endif
 #ifdef RNG_SEED_INIT
     opts_init.rng_seed_init = RNG_SEED_INIT;
@@ -629,7 +639,7 @@ int main(int argc, char *argv[]){
     opts.adve = ADVE;
     opts.sedi = SEDI;
     opts.cond = 0;
-    opts.coal = 1;
+    opts.coal = SPINUP > 0 ? 0 : 1;
     opts.rcyc = RCYC;
     opts.sgs_adve = SGS_ADVE;
   
@@ -695,7 +705,7 @@ int main(int argc, char *argv[]){
     arr = prtcls->outbuf();
     of_rmax << *(std::max_element(arr, arr+n_cell)) << " ";
 
-    real_t time = 0;
+    real_t time = -SPINUP; // spinup period is negative time
 #ifdef variable_dt
     opts.dt = DT;
 #endif
@@ -708,8 +718,12 @@ int main(int argc, char *argv[]){
     {
       tbeg = std::chrono::system_clock::now();
 
+      // turn coalescence on after spinup
+      if(opts.coal == 0 && time > 0)
+        opts.coal = 1;
+
 #ifdef variable_dt
-      if(time>0) // adjust dt
+      if(time > -SPINUP) // adjust dt
       {
         auto up_minmax = prtcls->diag_up_minmax();
         auto vp_minmax = prtcls->diag_vp_minmax();
