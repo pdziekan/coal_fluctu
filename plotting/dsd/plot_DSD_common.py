@@ -24,6 +24,37 @@ def beard77(r): # r - radius [m]
 
   return np.exp(y) / 100. # [m/s]
 
+# calcualte mean size spectra from results of individual runs
+# NOTE: assumnig that all used the same bins!
+def mean_DSD(dicts):
+  r_all = []
+  m_pre_all = []
+  m_post_all = []
+  
+  for pre in dicts:
+    r = np.zeros(0)
+    m_pre = np.zeros(0)
+    m_post = np.zeros(0)
+
+    fs = open(pre+"size_spectr.dat","r")
+    rows = [x.split() for x in fs.readlines()]
+    for row in rows: 
+      if len(row) == 0: # empty row indicates new simulation
+        r_all.append(r)
+        m_pre_all.append(m_pre)
+        m_post_all.append(m_post)
+
+        r = np.zeros(0)
+        m_pre = np.zeros(0)
+        m_post = np.zeros(0)
+      else:
+        r      = np.append(r,      float(row[0])) # [um]
+        m_pre  = np.append(m_pre,  float(row[1]))
+        m_post = np.append(m_post, float(row[2]))
+  
+  return np.average(r_all, axis=0), np.average(m_pre_all, axis=0), np.std(m_pre_all, axis=0), np.average(m_post_all, axis=0), np.std(m_post_all, axis=0)
+    
+
 def read_DSD(pre, time):
   LCM_r      = np.zeros(0)
   LCM_m_r    = np.zeros(0)

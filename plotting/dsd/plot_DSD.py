@@ -23,7 +23,12 @@ labeldict = {
 directory_base = "/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/data/LCM/Onishi/"
 
 available_datasets = [
-
+"/home/piotr/tmp/03_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_sd1e1_Onishi_HallDavis/",
+"/home/piotr/tmp/03_07_2023_GA17_Np64e6_nx1_eps0.1_dt0.1var_sd1e2_Onishi_HallDavis/",
+"/home/piotr/tmp/04_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_sd1_Onishi_HallDavis/",
+"/home/piotr/tmp/GA17_Np1_nx400_eps0.1_dt0.01var_ConstMulti1_Onishi_HallDavis/",
+"/home/piotr/tmp/06_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_SdConc1Tail_Spinup30_Onishi_HallDavis/",
+"/home/piotr/tmp/07_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_SdConc1Tail_DomainInit_Spinup30_Onishi_HallDavis/",
 # const multi
 directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300/",
 directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300_RngSeedInit44/",
@@ -60,6 +65,13 @@ directory_base + "GA17_Np64e6_nx1_dt10_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T30
 
 
 data_nsd = {}
+data_nsd["/home/piotr/tmp/03_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_sd1e1_Onishi_HallDavis/"] = 1e4
+data_nsd["/home/piotr/tmp/03_07_2023_GA17_Np64e6_nx1_eps0.1_dt0.1var_sd1e2_Onishi_HallDavis/"] = 1e2
+data_nsd["/home/piotr/tmp/04_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_sd1_Onishi_HallDavis/"] = 1e3
+data_nsd["/home/piotr/tmp/GA17_Np1_nx400_eps0.1_dt0.01var_ConstMulti1_Onishi_HallDavis/"] = 64e6
+data_nsd["/home/piotr/tmp/06_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_SdConc1Tail_Spinup30_Onishi_HallDavis/"] = 1e3
+data_nsd["/home/piotr/tmp/07_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_SdConc1Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 1e3
+
 data_nsd[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300/"] = 64e6
 data_nsd[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300_RngSeedInit44/"] = 64e6
 data_nsd[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e5Tail_Ens100_T300/"] = 1e5
@@ -79,6 +91,12 @@ data_nsd[directory_base + "GA17_Np64e6_nx1_dt1_SstpCoal1_Onishi_SdConc1e1Tail_En
 data_nsd[directory_base + "GA17_Np64e6_nx1_dt10_SstpCoal1_Onishi_SdConc1e1Tail_Ens1e5_T300/"] = 1e1
 
 data_dt = {}
+data_dt["/home/piotr/tmp/03_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_sd1e1_Onishi_HallDavis/"] = 0.1
+data_dt["/home/piotr/tmp/03_07_2023_GA17_Np64e6_nx1_eps0.1_dt0.1var_sd1e2_Onishi_HallDavis/"] = 0.1
+data_dt["/home/piotr/tmp/04_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_sd1_Onishi_HallDavis/"] = 0.1
+data_dt["/home/piotr/tmp/GA17_Np1_nx400_eps0.1_dt0.01var_ConstMulti1_Onishi_HallDavis/"] = 1e10
+data_dt["/home/piotr/tmp/06_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_SdConc1Tail_Spinup30_Onishi_HallDavis/"] = 0.1
+data_dt["/home/piotr/tmp/07_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_SdConc1Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 0.1
 data_dt[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300/"] = 1e10 # 1e10 used to mark variable dt, lame...
 data_dt[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300_RngSeedInit44/"] = 1e10
 data_dt[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e5Tail_Ens100_T300/"] = 0.1
@@ -240,6 +258,12 @@ data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Ta
 data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e4Tail_Ens1e3_T300/"] =  "$N_\mathrm{SD}^\mathrm{(bin)}=10^4$"
 data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e5Tail_Ens100_T300/"] =  "$N_\mathrm{SD}^\mathrm{(bin)}=10^5$"
 data_labels[directory_base + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300/"] =     "one-to-one"
+data_labels["/home/piotr/tmp/03_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_sd1e1_Onishi_HallDavis/"] = "nx 1e1 sd 1e1"
+data_labels["/home/piotr/tmp/03_07_2023_GA17_Np64e6_nx1_eps0.1_dt0.1var_sd1e2_Onishi_HallDavis/"] = "nx 1 sd 1e2"
+data_labels["/home/piotr/tmp/04_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_sd1_Onishi_HallDavis/"] = "nx 1e1 sd 1"
+data_labels["/home/piotr/tmp/GA17_Np1_nx400_eps0.1_dt0.01var_ConstMulti1_Onishi_HallDavis/"] = "one-to-one nx400"
+data_labels["/home/piotr/tmp/06_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_SdConc1Tail_Spinup30_Onishi_HallDavis/"] = "nx 1e1 sd 1 spinup 30"
+data_labels["/home/piotr/tmp/07_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_SdConc1Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = "nx 1e1 sd 1 spinup 30 domainInit"
 
 
 fig, ax = plt.subplots(2, 2, figsize=(8,8))
