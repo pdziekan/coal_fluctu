@@ -96,7 +96,12 @@ def read_DSD(pre, time):
 
 
 
-def plot_DSD(data_labels, data_colors, data_ls, data_la, EFM_flag, fig, ax, time):
+def plot_DSD(data_labels, data_colors, data_ls, data_la, EFM_flag, fig, ax, time, STD_flag=True, xlim=[1,1e3], ylim=[1e-4,1e1]):
+  if(STD_flag):
+    ax0=ax[0]
+    ax1=ax[1]
+  else:
+    ax0=ax
   for pre in data_labels:
     LCM_r, LCM_m_logr, LCM_m_logr_std_dev, LCM_m_logr_times_vterm, LCM_m_logr_err, vterm_r = read_DSD(pre, time)
     LCM_dlogr = np.log(LCM_r[1]) - np.log(LCM_r[0]) # [log(um)]
@@ -107,8 +112,9 @@ def plot_DSD(data_labels, data_colors, data_ls, data_la, EFM_flag, fig, ax, time
     print("total mass of droplets in the cell in LCM at the end: ", np.sum(LCM_M))
   
   # plot m(log r)
-    ax[0].plot(LCM_r * 1e6, LCM_m_logr, color=data_colors[pre], ls=data_ls[pre], alpha=data_la[pre], label= data_labels[pre])
-    ax[1].plot(LCM_r * 1e6, LCM_m_logr_std_dev, color=data_colors[pre], ls=data_ls[pre], alpha=data_la[pre], label= data_labels[pre])
+    ax0.plot(LCM_r * 1e6, LCM_m_logr, color=data_colors[pre], ls=data_ls[pre], alpha=data_la[pre], label= data_labels[pre])
+    if(STD_flag):
+      ax1.plot(LCM_r * 1e6, LCM_m_logr_std_dev, color=data_colors[pre], ls=data_ls[pre], alpha=data_la[pre], label= data_labels[pre])
   # std dev scaled as sqrt(N_SD)
   #  ax[1].plot(LCM_r * 1e6, LCM_m_logr_std_dev  * np.sqrt(data_nsd[pre]) / np.sqrt(64e6), label='end ' + data_labels[pre])
   
@@ -149,9 +155,9 @@ def plot_DSD(data_labels, data_colors, data_ls, data_la, EFM_flag, fig, ax, time
       EFM_m_logr = EFM_m_logr[int(EFM_N.size/2):]
       EFM_m_logr_std_dev = EFM_m_logr_std_dev[int(EFM_N.size/2):]
   
-    ax[0].plot(EFM_r[:int(EFM_N.size/2)] * 1e6, EFM_m_logr * 1e3, ls='--', color='black', label="SCE") # radius in [um], mass density in [g/m3 / unit(log[um])]
-    if time > 0: # dont plot SCE initial std dev - it is zero...
-      ax[1].plot(EFM_r[:int(EFM_N.size/2)] * 1e6, EFM_m_logr_std_dev * 1e3, ls='--', color='black', label="SCE") # radius in [um], mass density in [g/m3 / unit(log[um])]
+    ax0.plot(EFM_r[:int(EFM_N.size/2)] * 1e6, EFM_m_logr * 1e3, ls='--', color='black', label="SCE") # radius in [um], mass density in [g/m3 / unit(log[um])]
+    if time > 0 and STD_flag: # dont plot SCE initial std dev - it is zero...
+      ax1.plot(EFM_r[:int(EFM_N.size/2)] * 1e6, EFM_m_logr_std_dev * 1e3, ls='--', color='black', label="SCE") # radius in [um], mass density in [g/m3 / unit(log[um])]
     
     # plot N (number of droplets in the bin)
     #ax[0].plot(EFM_r * 1e6, EFM_N, label='end ' + data_labels[pre])
@@ -164,22 +170,24 @@ def plot_DSD(data_labels, data_colors, data_ls, data_la, EFM_flag, fig, ax, time
     print("total mass of droplets in the cell in EFM at the end: ", np.sum(EFM_M[int(EFM_M.size/2):]))
   
   #plt.title('Time at which largest droplet exceeds 3 mm radius and size of the droplet')
-  ax[0].set_xlabel('$r\ [\mathrm{\mu m}]$')
-  ax[1].set_xlabel('$r\ [\mathrm{\mu m}]$')
-  #ax[0].set_ylabel('mean mass density m(r) [g/m^3 / m]')
-#  ax[0].set_ylabel('mean mass density m(log r) [g/m^3 / unit(log[um])')
-  ax[0].set_ylabel('$<m>\ [\mathrm{gm^{-3} \ / \ unit(ln(\mu m))}]$')
-  ax[1].set_ylabel('$\sigma(m)\ [\mathrm{gm^{-3} \ / \ unit(ln(\mu m))}]$')
-#  ax[1].set_ylabel('standard deviation of mass density m(log r) [g/m^3 / unit(log[um])')
+  ax0.set_xlabel('$r\ [\mathrm{\mu m}]$')
+  #ax0.set_ylabel('mean mass density m(r) [g/m^3 / m]')
+#  ax0.set_ylabel('mean mass density m(log r) [g/m^3 / unit(log[um])')
+  ax0.set_ylabel('$<m>\ [\mathrm{gm^{-3} \ / \ unit(ln(\mu m))}]$')
+#  ax1.set_ylabel('standard deviation of mass density m(log r) [g/m^3 / unit(log[um])')
   
-  ax[0].set_xscale('log')
-  ax[0].set_yscale('log')
-  ax[1].set_xscale('log')
-  ax[1].set_yscale('log')
-  ax[0].set_xlim(1,1e3)
-  ax[1].set_xlim(1,1e3)
-  ax[0].set_ylim(1e-4,1e1)
-  ax[1].set_ylim(1e-6,1e1)
+  ax0.set_xscale('log')
+  ax0.set_yscale('log')
+  ax0.set_xlim(xlim)
+  ax0.set_ylim(ylim)
+
+  if(STD_flag):
+    ax1.set_xlabel('$r\ [\mathrm{\mu m}]$')
+    ax1.set_ylabel('$\sigma(m)\ [\mathrm{gm^{-3} \ / \ unit(ln(\mu m))}]$')
+    ax1.set_xscale('log')
+    ax1.set_yscale('log')
+    ax1.set_xlim(xlim)
+    ax1.set_ylim(ylim)
   
   #ax[0].set_xlim(40,)
   #ax[0].set_ylim(0,0.30)

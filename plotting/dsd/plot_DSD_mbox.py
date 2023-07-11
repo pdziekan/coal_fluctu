@@ -1,5 +1,6 @@
 from plot_DSD_common import plot_DSD, plot_DSD_diff
 import matplotlib.pyplot as plt
+import numpy as np
 
 labeldict = {
  0 : "(a)",
@@ -113,40 +114,66 @@ for ds in available_datasets:
   data_nsd_conc[ds] = float(data_nsd[ds]) / float(data_nx[ds])**3
   data_color[ds] = lc_nsd[data_nsd[ds]] 
   data_ls[ds] = 'solid'#ls_dt[data_dt[ds]] 
-  data_la[ds] = 0.4 #+ (1-0.4) * () 
+
+#nsd_conc_min = data_nsd_conc[min(data_nsd_conc, key=data_nsd_conc.get)]
+#nsd_conc_max = data_nsd_conc[max(data_nsd_conc, key=data_nsd_conc.get)]
+#data_nsd_conc_rng =  nsd_conc_max - nsd_conc_min
+la_min = 0.3
+la_max = 0.8
+nsd_conc_min = 1
+
+for ds in available_datasets:
+  data_la[ds] = la_min + (la_max - la_min) * (np.log(data_nsd_conc[ds]) - np.log(nsd_conc_min)) / (np.log(data_nsd[ds]) - np.log(nsd_conc_min))
+
+for ds in available_datasets:
+  print(ds, data_la[ds], data_nsd_conc[ds])
 
 
 
 
 ## ---- porownanie symulacji multi-box dla roznej liczby SD dla roznej wielkosci komorek ----
-fig, ax = plt.subplots(3, 2, figsize=(8,12))
+fig, ax = plt.subplots(2, 2, figsize=(8,8))
 
 # one-to-one
 data_labels = {}
-data_labels[directory_box + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300/"] =  "one-to-one"
-data_labels[directory_mbox + "GA17_Np1_nx400_eps0.1_dt0.01var_ConstMulti1_Onishi_HallDavis/"] = "one-to-one nx400"
+data_labels[directory_box + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300/"] = "$N_\mathrm{SD}^\mathrm{(cell)}=6.4 \\times 10^7$"
+data_labels[directory_mbox + "GA17_Np1_nx400_eps0.1_dt0.01var_ConstMulti1_Onishi_HallDavis/"] = "$N_\mathrm{SD}^\mathrm{(cell)}=1$"
 #plot_DSD(data_labels, data_color, data_ls, data_la, True, fig, ax[0], 0)
-plot_DSD(data_labels, data_color, data_ls, data_la, False, fig, ax[0], 300)
+plot_DSD(data_labels, data_color, data_ls, data_la, False, fig, ax[0,0], 300, False, ylim=[1e-3, 1e2])
 
 # SD=1e4
+data = [
+directory_box + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e4Tail_Ens1e3_T300/",
+#directory_mbox + "07_07_2023_GA17_NpTot64e6_nx2_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/",
+#directory_mbox + "07_07_2023_GA17_NpTot64e6_nx5_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/",
+directory_mbox + "07_07_2023_GA17_NpTot64e6_nx10_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/",
+directory_mbox + "07_07_2023_GA17_NpTot64e6_nx20_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/"
+]
 data_labels = {}
-data_labels[directory_box + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e4Tail_Ens1e3_T300/"] =  "$N_\mathrm{SD}^\mathrm{(bin)}=10^4$"
-data_labels[directory_mbox + "07_07_2023_GA17_NpTot64e6_nx2_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = "SdTot 1e4 nx 2"
-data_labels[directory_mbox + "07_07_2023_GA17_NpTot64e6_nx5_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = "SdTot 1e4 nx 5"
-data_labels[directory_mbox + "07_07_2023_GA17_NpTot64e6_nx10_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = "SdTot 1e4 nx 10"
-data_labels[directory_mbox + "07_07_2023_GA17_NpTot64e6_nx20_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = "SdTot 1e4 nx 20"
-plot_DSD(data_labels, data_color, data_ls, data_la, False, fig, ax[1], 300)
+for d in data:
+  data_labels[d] = "$N_\mathrm{SD}^\mathrm{(cell)}=" + str(data_nsd_conc[d]) + "$"
+plot_DSD(data_labels, data_color, data_ls, data_la, False, fig, ax[0,1], 300, False, ylim=[1e-3, 1e2])
 
 # SD=1e3
+data = [
+directory_box + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/",
+directory_mbox + "07_07_2023_GA17_NpTot64e6_nx2_eps0.1_dt0.1var_SdTot1e3Tail_DomainInit_Spinup30_Onishi_HallDavis/",
+directory_mbox + "07_07_2023_GA17_NpTot64e6_nx5_eps0.1_dt0.1var_SdTot1e3Tail_DomainInit_Spinup30_Onishi_HallDavis/",
+directory_mbox + "07_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_SdConc1Tail_DomainInit_Spinup30_Onishi_HallDavis/"
+]
 data_labels = {}
-data_labels[directory_box + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"] =  "$N_\mathrm{SD}^\mathrm{(bin)}=10^3$"
-data_labels[directory_mbox + "07_07_2023_GA17_NpTot64e6_nx2_eps0.1_dt0.1var_SdTot1e3Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = "SdTot 1e3 nx 2"
-data_labels[directory_mbox + "07_07_2023_GA17_NpTot64e6_nx5_eps0.1_dt0.1var_SdTot1e3Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = "SdTot 1e3 nx 5"
-data_labels[directory_mbox + "07_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_SdConc1Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = "SdTot 1e3 nx 10"
-plot_DSD(data_labels, data_color, data_ls, data_la, False, fig, ax[2], 300)
+for d in data:
+  data_labels[d] = "$N_\mathrm{SD}^\mathrm{(cell)}=" + str(data_nsd_conc[d]) + "$"
+plot_DSD(data_labels, data_color, data_ls, data_la, False, fig, ax[1,0], 300, False, ylim=[1e-3, 1e2])
 
-#ax[0,0].set_xlabel('')
-#ax[0,1].set_xlabel('')
+ax[0,0].set_title('one-to-one')
+ax[0,1].set_title('$N_\mathrm{SD}^\mathrm{(bin)}=10^4$')
+ax[1,0].set_title('$N_\mathrm{SD}^\mathrm{(bin)}=10^3$')
+
+#ax[1].set_ylabel('')
+#ax[2].set_ylabel('')
+#ax[1].yaxis.set_ticklabels([])
+#ax[2].yaxis.set_ticklabels([])
 #ax[0,0].set_title('$t=0\ s$')
 #ax[0,1].set_title('$t=0\ s$')
 #ax[1,0].set_title('$t=300\ s$')
@@ -156,7 +183,8 @@ plot_DSD(data_labels, data_color, data_ls, data_la, False, fig, ax[2], 300)
 #lgd = fig.legend(handles, labels, handlelength=4, loc='lower center', bbox_to_anchor=(0.475,0))
 # a b c d labels
 for i,axs in enumerate(ax.flatten()):
+  axs.legend(loc='upper right')
   axs.text(0.1, 0.9, labeldict[i], fontsize=10, transform=axs.transAxes)
 fig.tight_layout()
-fig.subplots_adjust(bottom=0.28, wspace=0.3)#, hspace=0.25)
+#fig.subplots_adjust(bottom=0.28, wspace=0.3)#, hspace=0.25)
 fig.savefig("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/img/DSD_multibox_t0_t300.pdf")
