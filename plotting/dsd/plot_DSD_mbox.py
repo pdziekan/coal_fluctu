@@ -24,6 +24,7 @@ available_datasets = [
 directory_box + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300/",
 directory_box + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e4Tail_Ens1e3_T300/",
 directory_box + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/",
+directory_box + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/",
 directory_mbox + "03_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_sd1e1_Onishi_HallDavis/",
 directory_mbox + "03_07_2023_GA17_Np64e6_nx1_eps0.1_dt0.1var_sd1e2_Onishi_HallDavis/",
 directory_mbox + "04_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_sd1_Onishi_HallDavis/",
@@ -34,14 +35,18 @@ directory_mbox + "07_07_2023_GA17_NpTot64e6_nx2_eps0.1_dt0.1var_SdTot1e4Tail_Dom
 directory_mbox + "07_07_2023_GA17_NpTot64e6_nx5_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/",
 directory_mbox + "07_07_2023_GA17_NpTot64e6_nx10_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/",
 directory_mbox + "07_07_2023_GA17_NpTot64e6_nx20_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/",
+directory_mbox + "11_07_2023_GA17_NpTot64e6_nx30_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/",
 directory_mbox + "07_07_2023_GA17_NpTot64e6_nx2_eps0.1_dt0.1var_SdTot1e3Tail_DomainInit_Spinup30_Onishi_HallDavis/",
 directory_mbox + "07_07_2023_GA17_NpTot64e6_nx5_eps0.1_dt0.1var_SdTot1e3Tail_DomainInit_Spinup30_Onishi_HallDavis/",
+directory_mbox + "11_07_2023_GA17_NpTot64e6_nx2_eps0.1_dt0.1var_SdTot1e2Tail_DomainInit_Spinup30_Onishi_HallDavis/",
+directory_mbox + "11_07_2023_GA17_NpTot64e6_nx5_eps0.1_dt0.1var_SdTot1e2Tail_DomainInit_Spinup30_Onishi_HallDavis/",
 ]
 
 data_nx = {}
 data_nx[directory_box + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300/"] = 1
 data_nx[directory_box + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e4Tail_Ens1e3_T300/"] = 1
 data_nx[directory_box + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"] = 1
+data_nx[directory_box + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] = 1
 data_nx[directory_mbox + "03_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_sd1e1_Onishi_HallDavis/"] = 10
 data_nx[directory_mbox + "03_07_2023_GA17_Np64e6_nx1_eps0.1_dt0.1var_sd1e2_Onishi_HallDavis/"] = 1
 data_nx[directory_mbox + "04_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_sd1_Onishi_HallDavis/"] = 10
@@ -52,14 +57,18 @@ data_nx[directory_mbox + "07_07_2023_GA17_NpTot64e6_nx2_eps0.1_dt0.1var_SdTot1e4
 data_nx[directory_mbox + "07_07_2023_GA17_NpTot64e6_nx5_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 5
 data_nx[directory_mbox + "07_07_2023_GA17_NpTot64e6_nx10_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 10
 data_nx[directory_mbox + "07_07_2023_GA17_NpTot64e6_nx20_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 20
+data_nx[directory_mbox + "11_07_2023_GA17_NpTot64e6_nx30_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 30
 data_nx[directory_mbox + "07_07_2023_GA17_NpTot64e6_nx2_eps0.1_dt0.1var_SdTot1e3Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 2
 data_nx[directory_mbox + "07_07_2023_GA17_NpTot64e6_nx5_eps0.1_dt0.1var_SdTot1e3Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 5
+data_nx[directory_mbox + "11_07_2023_GA17_NpTot64e6_nx2_eps0.1_dt0.1var_SdTot1e2Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 2
+data_nx[directory_mbox + "11_07_2023_GA17_NpTot64e6_nx5_eps0.1_dt0.1var_SdTot1e2Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 5
 
 # number of SDs in the entire box
 data_nsd = {}
 data_nsd[directory_box + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300/"] = 64e6
 data_nsd[directory_box + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e4Tail_Ens1e3_T300/"] = 1e4
 data_nsd[directory_box + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"] = 1e3
+data_nsd[directory_box + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] = 1e2
 data_nsd[directory_mbox + "03_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_sd1e1_Onishi_HallDavis/"] = 1e4
 data_nsd[directory_mbox + "03_07_2023_GA17_Np64e6_nx1_eps0.1_dt0.1var_sd1e2_Onishi_HallDavis/"] = 1e2
 data_nsd[directory_mbox + "04_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_sd1_Onishi_HallDavis/"] = 1e3
@@ -70,8 +79,11 @@ data_nsd[directory_mbox + "07_07_2023_GA17_NpTot64e6_nx2_eps0.1_dt0.1var_SdTot1e
 data_nsd[directory_mbox + "07_07_2023_GA17_NpTot64e6_nx5_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 1e4
 data_nsd[directory_mbox + "07_07_2023_GA17_NpTot64e6_nx10_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 1e4
 data_nsd[directory_mbox + "07_07_2023_GA17_NpTot64e6_nx20_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 1e4
+data_nsd[directory_mbox + "11_07_2023_GA17_NpTot64e6_nx30_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 1e4
 data_nsd[directory_mbox + "07_07_2023_GA17_NpTot64e6_nx2_eps0.1_dt0.1var_SdTot1e3Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 1e3
 data_nsd[directory_mbox + "07_07_2023_GA17_NpTot64e6_nx5_eps0.1_dt0.1var_SdTot1e3Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 1e3
+data_nsd[directory_mbox + "11_07_2023_GA17_NpTot64e6_nx2_eps0.1_dt0.1var_SdTot1e2Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 1e2
+data_nsd[directory_mbox + "11_07_2023_GA17_NpTot64e6_nx5_eps0.1_dt0.1var_SdTot1e2Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 1e2
 
 
 ## linestyles denote dt
@@ -115,6 +127,29 @@ for ds in available_datasets:
   data_color[ds] = lc_nsd[data_nsd[ds]] 
   data_ls[ds] = 'solid'#ls_dt[data_dt[ds]] 
 
+# hardcode line styles of data
+data_ls[directory_box + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_ConstMulti1_Ens10_T300/"] = 'solid'
+data_ls[directory_box + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e4Tail_Ens1e3_T300/"] = 'solid'
+data_ls[directory_box + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/"] = 'solid'
+data_ls[directory_box + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/"] = 'solid'
+data_ls[directory_mbox + "GA17_Np1_nx400_eps0.1_dt0.01var_ConstMulti1_Onishi_HallDavis/"] = 'dotted'
+data_ls[directory_mbox + "03_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_sd1e1_Onishi_HallDavis/"] = 'dotted'
+#data_ls[directory_mbox + "03_07_2023_GA17_Np64e6_nx1_eps0.1_dt0.1var_sd1e2_Onishi_HallDavis/"] = 'dotted'
+#data_ls[directory_mbox + "04_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_sd1_Onishi_HallDavis/"] = 1e3
+#data_ls[directory_mbox + "06_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_SdConc1Tail_Spinup30_Onishi_HallDavis/"] = 1e3
+data_ls[directory_mbox + "07_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_SdConc1Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 'dotted'
+#data_ls[directory_mbox + "07_07_2023_GA17_NpTot64e6_nx2_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 'dashed'
+#data_ls[directory_mbox + "07_07_2023_GA17_NpTot64e6_nx5_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 'dotted'
+data_ls[directory_mbox + "07_07_2023_GA17_NpTot64e6_nx10_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 'dashed'
+data_ls[directory_mbox + "07_07_2023_GA17_NpTot64e6_nx20_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 'dotted'
+#data_ls[directory_mbox + "11_07_2023_GA17_NpTot64e6_nx30_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 1e4
+data_ls[directory_mbox + "07_07_2023_GA17_NpTot64e6_nx2_eps0.1_dt0.1var_SdTot1e3Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 'dashed'
+data_ls[directory_mbox + "07_07_2023_GA17_NpTot64e6_nx5_eps0.1_dt0.1var_SdTot1e3Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 'dashed'
+data_ls[directory_mbox + "11_07_2023_GA17_NpTot64e6_nx2_eps0.1_dt0.1var_SdTot1e2Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 'dashed'
+data_ls[directory_mbox + "11_07_2023_GA17_NpTot64e6_nx5_eps0.1_dt0.1var_SdTot1e2Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 'dotted'
+#data_ls[directory_mbox + "07_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_SdConc1Tail_DomainInit_Spinup30_Onishi_HallDavis/"] = 'dashed'
+
+# use line alpha to denote data_nsd_conc
 #nsd_conc_min = data_nsd_conc[min(data_nsd_conc, key=data_nsd_conc.get)]
 #nsd_conc_max = data_nsd_conc[max(data_nsd_conc, key=data_nsd_conc.get)]
 #data_nsd_conc_rng =  nsd_conc_max - nsd_conc_min
@@ -123,13 +158,8 @@ la_max = 0.8
 nsd_conc_min = 1
 
 for ds in available_datasets:
-  data_la[ds] = la_min + (la_max - la_min) * (np.log(data_nsd_conc[ds]) - np.log(nsd_conc_min)) / (np.log(data_nsd[ds]) - np.log(nsd_conc_min))
-
-for ds in available_datasets:
-  print(ds, data_la[ds], data_nsd_conc[ds])
-
-
-
+  data_la[ds] = 1
+  #data_la[ds] = la_min + (la_max - la_min) * (np.log(data_nsd_conc[ds]) - np.log(nsd_conc_min)) / (np.log(data_nsd[ds]) - np.log(nsd_conc_min))
 
 ## ---- porownanie symulacji multi-box dla roznej liczby SD dla roznej wielkosci komorek ----
 fig, ax = plt.subplots(2, 2, figsize=(8,8))
@@ -147,7 +177,8 @@ directory_box + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e4Tail_Ens1e3_T30
 #directory_mbox + "07_07_2023_GA17_NpTot64e6_nx2_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/",
 #directory_mbox + "07_07_2023_GA17_NpTot64e6_nx5_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/",
 directory_mbox + "07_07_2023_GA17_NpTot64e6_nx10_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/",
-directory_mbox + "07_07_2023_GA17_NpTot64e6_nx20_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/"
+directory_mbox + "07_07_2023_GA17_NpTot64e6_nx20_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/",
+#directory_mbox + "11_07_2023_GA17_NpTot64e6_nx30_eps0.1_dt0.1var_SdTot1e4Tail_DomainInit_Spinup30_Onishi_HallDavis/"
 ]
 data_labels = {}
 for d in data:
@@ -157,7 +188,7 @@ plot_DSD(data_labels, data_color, data_ls, data_la, False, fig, ax[0,1], 300, Fa
 # SD=1e3
 data = [
 directory_box + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e3Tail_Ens1e4_T300/",
-directory_mbox + "07_07_2023_GA17_NpTot64e6_nx2_eps0.1_dt0.1var_SdTot1e3Tail_DomainInit_Spinup30_Onishi_HallDavis/",
+#directory_mbox + "07_07_2023_GA17_NpTot64e6_nx2_eps0.1_dt0.1var_SdTot1e3Tail_DomainInit_Spinup30_Onishi_HallDavis/",
 directory_mbox + "07_07_2023_GA17_NpTot64e6_nx5_eps0.1_dt0.1var_SdTot1e3Tail_DomainInit_Spinup30_Onishi_HallDavis/",
 directory_mbox + "07_07_2023_GA17_Np64e3_nx1e1_eps0.1_dt0.1var_SdConc1Tail_DomainInit_Spinup30_Onishi_HallDavis/"
 ]
@@ -166,14 +197,31 @@ for d in data:
   data_labels[d] = "$N_\mathrm{SD}^\mathrm{(cell)}=" + str(data_nsd_conc[d]) + "$"
 plot_DSD(data_labels, data_color, data_ls, data_la, False, fig, ax[1,0], 300, False, ylim=[1e-3, 1e2])
 
+# SD=1e2
+data = [
+directory_box + "GA17_Np64e6_nx1_dt0.1_SstpCoal1_Onishi_SdConc1e2Tail_Ens1e4_T300/",
+directory_mbox + "11_07_2023_GA17_NpTot64e6_nx2_eps0.1_dt0.1var_SdTot1e2Tail_DomainInit_Spinup30_Onishi_HallDavis/",
+directory_mbox + "11_07_2023_GA17_NpTot64e6_nx5_eps0.1_dt0.1var_SdTot1e2Tail_DomainInit_Spinup30_Onishi_HallDavis/"
+]
+data_labels = {}
+for d in data:
+  data_labels[d] = "$N_\mathrm{SD}^\mathrm{(cell)}=" + str(data_nsd_conc[d]) + "$"
+plot_DSD(data_labels, data_color, data_ls, data_la, False, fig, ax[1,1], 300, False, ylim=[1e-3, 1e2])
+
 ax[0,0].set_title('one-to-one')
 ax[0,1].set_title('$N_\mathrm{SD}^\mathrm{(bin)}=10^4$')
 ax[1,0].set_title('$N_\mathrm{SD}^\mathrm{(bin)}=10^3$')
+ax[1,1].set_title('$N_\mathrm{SD}^\mathrm{(bin)}=10^2$')
 
-#ax[1].set_ylabel('')
-#ax[2].set_ylabel('')
-#ax[1].yaxis.set_ticklabels([])
-#ax[2].yaxis.set_ticklabels([])
+ax[0,0].set_xlabel('')
+ax[0,1].set_xlabel('')
+ax[0,0].xaxis.set_ticklabels([])
+ax[0,1].xaxis.set_ticklabels([])
+
+ax[0,1].set_ylabel('')
+ax[1,1].set_ylabel('')
+ax[0,1].yaxis.set_ticklabels([])
+ax[1,1].yaxis.set_ticklabels([])
 #ax[0,0].set_title('$t=0\ s$')
 #ax[0,1].set_title('$t=0\ s$')
 #ax[1,0].set_title('$t=300\ s$')
