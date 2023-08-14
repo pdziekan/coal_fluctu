@@ -163,12 +163,12 @@ fig, ax = plt.subplots(1, 2, figsize=(8,4))
 plot_DSD(data_labels, data_color, data_ls, data_la, False, fig, ax, 300)
 #single legend for the whole figure
 handles, labels = ax[0].get_legend_handles_labels()
-lgd = fig.legend(handles, labels, handlelength=4, loc='lower center', bbox_to_anchor=(0.475,0))
+lgd = fig.legend(handles, labels, handlelength=4, loc='lower center', bbox_to_anchor=(0.475,0), ncol=4)
 # a b c d labels
 for i,axs in enumerate(ax.flatten()):
   axs.text(0.1, 0.9, labeldict[i], fontsize=10, transform=axs.transAxes)
 fig.tight_layout()
-fig.subplots_adjust(bottom=0.4, wspace=0.3)#, hspace=0.25)
+fig.subplots_adjust(bottom=0.22, wspace=0.3)#, hspace=0.25)
 #fig.suptitle("$N_\mathrm{SD}^\mathrm{(bin)}=10^2$")
 fig.savefig("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/img/DSD_timestep_t300.pdf")
 
@@ -249,12 +249,12 @@ ax[1,0].set_title('$t=300\ s$')
 ax[1,1].set_title('$t=300\ s$')
 #single legend for the whole figure
 handles, labels = ax[0,0].get_legend_handles_labels()
-lgd = fig.legend(handles, labels, handlelength=4, loc='lower center', bbox_to_anchor=(0.475,0))
+lgd = fig.legend(handles, labels, handlelength=4, loc='lower center', bbox_to_anchor=(0.5,0), ncol=4)
 # a b c d labels
 for i,axs in enumerate(ax.flatten()):
   axs.text(0.1, 0.9, labeldict[i], fontsize=10, transform=axs.transAxes)
 fig.tight_layout()
-fig.subplots_adjust(bottom=0.28, wspace=0.3)#, hspace=0.25)
+fig.subplots_adjust(bottom=0.15, wspace=0.3)#, hspace=0.25)
 fig.savefig("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/img/DSD_NSD_t0_t300.pdf")
 
 

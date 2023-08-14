@@ -110,6 +110,10 @@ def plot_DSD(data_labels, data_colors, data_ls, data_la, EFM_flag, fig, ax, time
     print(pre)
     print("total number of droplets in the cell in LCM at the end: ", np.sum(LCM_N))
     print("total mass of droplets in the cell in LCM at the end: ", np.sum(LCM_M))
+    print("0-th moment of number density (total droplet number): ", np.sum(LCM_N * np.power(LCM_r,0)))
+    print("3-rd moment of number density (total droplet mass): ", np.sum(LCM_N * np.power(four_over_three_pi_rhow * LCM_r,3)))
+    print("6-th moment of number density (radar reflectivity): ", np.sum(LCM_N * np.power(four_over_three_pi_rhow * LCM_r,6)))
+    print("9-th moment of number density (for comparison with Unterstrasser 2017,2020): ", np.sum(LCM_N * np.power(four_over_three_pi_rhow * LCM_r,9)))
   
   # plot m(log r)
     ax0.plot(LCM_r * 1e6, LCM_m_logr, color=data_colors[pre], ls=data_ls[pre], alpha=data_la[pre], label= data_labels[pre])
