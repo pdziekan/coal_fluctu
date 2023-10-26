@@ -95,6 +95,14 @@ def read_DSD(pre, time):
   return(LCM_r, LCM_m_logr, LCM_m_logr_std_dev, LCM_m_logr_times_vterm, LCM_m_logr_err, vterm_r)
 
 
+#calculate the initial mass density function m(log r) from the Onishi paper [kg/m^3]
+def Onishi_init_mass_density(r): #r in meters
+  n_0 = 142 * 1e6 #[1/m3]
+  mean_m = four_over_three_pi_rhow * np.power(15e-6, 3) #[kg]
+  m = four_over_three_pi_rhow * np.power(r, 3) #[kg]
+  mass_dens =16./3. * n_0 /mean_m * np.pi**2 * 1000**2 * np.exp(- m / mean_m ) * r**6
+  return mass_dens
+
 
 def plot_DSD(data_labels, data_colors, data_ls, data_la, EFM_flag, fig, ax, time, STD_flag=True, xlim=[1,1e3], ylim=[1e-4,1e1]):
   if(STD_flag):
@@ -172,6 +180,14 @@ def plot_DSD(data_labels, data_colors, data_ls, data_la, EFM_flag, fig, ax, time
     
     print("total number of droplets in the cell in EFM at the end: ", np.sum(EFM_N[int(EFM_N.size/2):])) # EFM_N contains init spectrum and final spectrum
     print("total mass of droplets in the cell in EFM at the end: ", np.sum(EFM_M[int(EFM_M.size/2):]))
+
+    # plot analytical initial distro
+    #Onishi_r = LCM_r
+    #Onishi_m_logr = Onishi_init_mass_density(Onishi_r)
+#    Onishi_r = np.logspace(np.log(1e-8), np.log(1e-3), 100, base=np.e)
+#    Onishi_m_logr = Onishi_init_mass_density(Onishi_r) * 1e3 # to [g/m3]
+#    ##print("Onishi: ", Onishi_r, Onishi_m_logr)
+#    ax0.plot(Onishi_r * 1e6, Onishi_m_logr , label="onishi", ls='-')
   
   #plt.title('Time at which largest droplet exceeds 3 mm radius and size of the droplet')
   ax0.set_xlabel('$r\ [\mathrm{\mu m}]$')
@@ -238,3 +254,76 @@ def plot_DSD_diff(ax, data_labels, data_colors, data_ls, data_la, ref_label, tim
 #  ax.grid(axis='y', color='0.5')
   ax.legend(loc='upper left')
 #  plt.savefig("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/img/DSD_diff_"+str(outname)+"_t"+str(time)+".pdf")
+
+def plot_DSD_moms(data_labels, data_colors, data_ls, data_la, EFM_flag, ax, time, xlim=[1,1e3], ylim=[1e-4,1e1]):
+
+  moments = np.arange(11)
+
+  Onishi_r = np.logspace(np.log(1e-9), np.log(1e-2), 1000, base=np.e)
+  Onishi_dlogr = np.log(Onishi_r[1]) - np.log(Onishi_r[0]) 
+  Onishi_m_logr = Onishi_init_mass_density(Onishi_r) * 1e3 # to [g/m3]
+  Onishi_M = Onishi_m_logr * Onishi_dlogr * volume * 1e-3
+  Onishi_N = Onishi_M / four_over_three_pi_rhow / np.power(Onishi_r,3) # number of droplets of this size in the cell [1]
+  Onishi_n_logr = Onishi_m_logr / four_over_three_pi_rhow / np.power(Onishi_r,3) * 1e-3 #[1/m3 / unit(logr)]
+  Onishi_n_r = Onishi_n_logr / Onishi_r
+  #print(Onishi_r, Onishi_m_logr)
+  Onishi_moms = np.zeros(moments.size)
+  for i, mom in enumerate(moments):
+    moms_center = 0 if i < 2 else Onishi_moms[1] #central moments starting from the 2nd
+    Onishi_moms[i] = (np.sum(Onishi_n_r * np.power(Onishi_r - moms_center,mom))) / np.sum(Onishi_n_r)
+#    print(str(mom) + " central moment of the analytical mass density function: " + str(moment))
+  print(Onishi_moms)
+#  ax.plot(Onishi_r, Onishi_n_logr)
+
+  for pre in data_labels:
+    LCM_r, LCM_m_logr, LCM_m_logr_std_dev, LCM_m_logr_times_vterm, LCM_m_logr_err, vterm_r = read_DSD(pre, time)
+    LCM_dlogr = np.log(LCM_r[1]) - np.log(LCM_r[0]) # [log(um)]
+    LCM_M = LCM_m_logr * LCM_dlogr * volume * 1e-3 # mass of droplets of this size in the cell [kg]
+    LCM_N = LCM_M / four_over_three_pi_rhow / np.power(LCM_r,3) # number of droplets of this size in the cell [1]
+    LCM_n_logr = LCM_m_logr / four_over_three_pi_rhow / np.power(LCM_r,3) * 1e-3
+    LCM_n_r = LCM_n_logr / LCM_r
+
+    LCM_moms = np.zeros(moments.size)
+    for i, mom in enumerate(moments):
+      moms_center = 0 if i < 2 else LCM_moms[1] #central moments starting from the 2nd
+      LCM_moms[i] = np.sum(LCM_n_r * np.power(LCM_r - moms_center,mom)) / np.sum(LCM_n_r)
+
+#    ax.plot(moments, (LCM_moms - Onishi_moms) / Onishi_moms * 100, color=data_colors[pre], ls=data_ls[pre], alpha=data_la[pre], label= data_labels[pre], marker='o')
+    ax.scatter(moments, (LCM_moms - Onishi_moms) / Onishi_moms * 100, color=data_colors[pre], alpha=data_la[pre], label= data_labels[pre], marker='o')
+  #  ax.plot(LCM_r, LCM_n_logr)
+    print(LCM_moms)
+
+  
+  # EFM results (Smoluchowski)
+  if EFM_flag:
+    efm_data = np.genfromtxt("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/data/EFM/dt 0.1_rq015.0_xmw 2.0_scal10.0_isw3_cut_____rmr_____tmax301._boplot00.out", unpack=True)
+    #efm_data = np.genfromtxt("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/data/EFM/dt 0.1_rq015.0_xmw 2.0_scal15.0_isw3_cut****_rmr****_tmax301._boplot00.out", unpack=True)
+    # efm_data[0] - radius[um]
+    # efm_data[1] - mass density m(ln r) [kg/m3] with radius in microns
+    EFM_r = efm_data[0] * 1e-6 # [m]
+    EFM_m_logr = efm_data[1] # [kg/m3 / unit(log[um])]
+    EFM_dlogr = np.log(efm_data[0][1]) - np.log(efm_data[0][0]) # [log(um)]
+    EFM_m_r = EFM_m_logr / EFM_r # mass density m(r) [kg/m3 / m]
+    EFM_M = EFM_m_logr * EFM_dlogr * volume # mass of droplets of this size in the cell [kg]
+    EFM_N = EFM_M / four_over_three_pi_rhow / np.power(EFM_r,3) # number of droplets of this size in the cell [1]
+    EFM_n_logr = EFM_m_logr / four_over_three_pi_rhow / np.power(EFM_r,3)
+    EFM_n_r = EFM_n_logr / EFM_r
+
+    EFM_moms = np.zeros(moments.size)
+    for i, mom in enumerate(moments):
+      moms_center = 0 if i < 2 else EFM_moms[1] #central moments starting from the 2nd
+      EFM_moms[i] = np.sum(EFM_n_r[:int(EFM_M.size/2)]* np.power(EFM_r[:int(EFM_M.size/2)] - moms_center,mom)) / np.sum(EFM_n_r[:int(EFM_M.size/2)])
+    print(EFM_moms)
+
+    #ax.plot(moments, (EFM_moms - Onishi_moms) / Onishi_moms * 100, ls='--', color='black', label="SCE", marker='o')
+    ax.scatter(moments, (EFM_moms - Onishi_moms) / Onishi_moms * 100, color='gray', label="SCE", marker='*')
+    #ax.plot(EFM_r[:int(EFM_M.size/2)], EFM_n_logr[:int(EFM_M.size/2)])
+
+  
+  #ax0.set_xlabel('$r\ [\mathrm{\mu m}]$')
+  #ax0.set_ylabel('$<m>\ [\mathrm{gm^{-3} \ / \ unit(ln(\mu m))}]$')
+  #
+  #ax.set_xscale('log')
+  #ax.set_yscale('log')
+  #ax0.set_xlim(xlim)
+  #ax.set_ylim([1e-30,1e10])

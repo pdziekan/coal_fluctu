@@ -1,4 +1,4 @@
-from plot_DSD_common import plot_DSD, plot_DSD_diff
+from plot_DSD_common import plot_DSD, plot_DSD_diff, plot_DSD_moms
 import matplotlib.pyplot as plt
 
 labeldict = {
@@ -256,6 +256,15 @@ for i,axs in enumerate(ax.flatten()):
 fig.tight_layout()
 fig.subplots_adjust(bottom=0.15, wspace=0.3)#, hspace=0.25)
 fig.savefig("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/img/DSD_NSD_t0_t300.pdf")
+
+
+fig, ax = plt.subplots(1, 1, figsize=(5.5,5.5))
+plot_DSD_moms(data_labels, data_color, data_ls, data_la, True, ax, 0)
+ax.set_xlabel('moment')
+ax.set_ylabel('difference [%]')
+ax.legend(loc='upper left')
+fig.tight_layout()
+fig.savefig("/home/piotr/praca/coal_fluctu_dim/LCM_DSD_fluctuations/img/DSD_moms_t0.pdf")
 
 
 
